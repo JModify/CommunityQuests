@@ -40,7 +40,14 @@ public class CommandManager implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         try {
             if (args.length >= 1) {
-                getCommand(sender, args[0]).execute(sender, args);
+                // TownyQuests fork edit
+                PluginCommand cmd = getCommand(sender, args[0]);
+                if (!cmd.isDisabled()) {
+                    cmd.execute(sender, args);
+                } else {
+                    String message = plugin.getMessages().message("commandDisabled");
+                    sender.sendMessage(message);
+                }
             }
         } catch (NullPointerException ignored) {
         }

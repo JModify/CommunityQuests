@@ -2,6 +2,7 @@ package me.wonka01.ServerQuests.commands;
 
 import lombok.NonNull;
 import me.knighthat.apis.commands.PluginCommand;
+import me.modify.townyquests.AutoQuestTimer;
 import me.wonka01.ServerQuests.ServerQuests;
 import me.wonka01.ServerQuests.gui.StopGui;
 import org.bukkit.command.CommandSender;
@@ -10,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class StopCommand extends PluginCommand {
     public StopCommand(ServerQuests plugin) {
-        super(plugin, true);
+        super(plugin, true, AutoQuestTimer.isEnabled());
     }
 
     @Override

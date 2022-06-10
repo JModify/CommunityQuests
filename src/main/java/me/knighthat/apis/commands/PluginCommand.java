@@ -12,10 +12,20 @@ public abstract class PluginCommand implements Colorization {
     private final ServerQuests plugin;
     private final boolean requiresPlayer;
 
-    protected PluginCommand(ServerQuests plugin, boolean requiresPlayer) {
+    // TownyQuests edit
+    @Getter private final boolean disabled;
 
+    protected PluginCommand(ServerQuests plugin, boolean requiresPlayer) {
         this.plugin = plugin;
         this.requiresPlayer = requiresPlayer;
+        this.disabled = false;
+    }
+
+    // TownyQuests edit
+    protected PluginCommand(ServerQuests plugin, boolean requiresPlayer, boolean disabled) {
+        this.plugin = plugin;
+        this.requiresPlayer = requiresPlayer;
+        this.disabled = disabled;
     }
 
     public abstract @NonNull String getName();

@@ -1,4 +1,5 @@
-# Number of quests that can be in progress at a time
+# Number of quests that can be in progress at a time.
+# This value is ignored and only 1 quest can be active if auto quest is enabled.
 questLimit: 5
 
 # When a quest is completed a leader board message is broadcast. Chose the maximum number of players to be displayed.
@@ -9,6 +10,12 @@ leaderBoardSize: 5
 barColor: "GREEN"
 
 disableBossBar: false
+
+# Should automatic quest starting be enabled.. If this is enabled, users are not able to start server quests,
+# all questing is controlled by the plugin and there will be a timer of randomly selected quests starting every X amount of time.
+autoQuest:
+    enabled: true
+    interval: 5
 
 Quests:
 #    TestQuest: # Quest identifier can be whatever you'd like as long as it's unique

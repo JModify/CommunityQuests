@@ -2,6 +2,7 @@ package me.wonka01.ServerQuests;
 
 import lombok.Getter;
 import lombok.NonNull;
+import me.modify.townyquests.AutoQuestTimer;
 import me.wonka01.ServerQuests.commands.CommandManager;
 import me.knighthat.apis.files.Config;
 import me.knighthat.apis.files.Messages;
@@ -17,6 +18,7 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.checkerframework.checker.units.qual.A;
 
 import java.util.Locale;
 
@@ -38,6 +40,8 @@ public class ServerQuests extends JavaPlugin {
     private ActiveQuests activeQuests;
     private JsonQuestSave jsonSave;
 
+    private AutoQuestTimer autoQuestTimer;
+
     @Override
     public void onEnable() {
 
@@ -45,6 +49,10 @@ public class ServerQuests extends JavaPlugin {
 
         loadConfig();
         loadConfigurationLimits();
+
+        // TownyQuests edit
+        loadAutoQuest();
+
         loadQuestLibraryFromConfig();
         loadSaveData();
 
@@ -86,11 +94,32 @@ public class ServerQuests extends JavaPlugin {
         this.activeQuests = new ActiveQuests();
     }
 
+    private void loadAutoQuest() {
+        autoQuestTimer = new AutoQuestTimer(this);
+        boolean autoQuestEnabled = getConfig().getBoolean("autoQuest.enabled", true);
+        int autoQuestIntervalMinutes = getConfig().getInt("autoQuest.interval", 5);
+        long autoQuestIntervalTicks = (autoQuestIntervalMinutes * 60L) * 20;
+
+        AutoQuestTimer.setEnabled(autoQuestEnabled);
+        AutoQuestTimer.setInterval(autoQuestIntervalTicks);
+
+        if (autoQuestEnabled) {
+            // Only a single active quest can be running at a time when auto quest is enabled.
+            ActiveQuests.setQuestLimit(1);
+
+            // Start the repeating task which automatically activates/ends quests.
+            getServer().getScheduler().scheduleSyncRepeatingTask(this, new AutoQuestTimer(this),
+                AutoQuestTimer.getInterval(), AutoQuestTimer.getInterval());
+        }
+    }
+
+    // TownyQuests edit
     private void loadConfigurationLimits() {
         int questLimit = getConfig().getInt("questLimit");
         String barColor = getConfig().getString("barColor").toUpperCase(Locale.ROOT);
         int leaderBoardLimit = getConfig().getInt("leaderBoardSize", 5);
         boolean disableBossBar = getConfig().getBoolean("disableBossBar", false);
+
         BarManager.setDisableBossBar(disableBossBar);
         BasePlayerComponent.setLeaderBoardSize(leaderBoardLimit);
         QuestBar.barColor = barColor;
@@ -117,6 +146,10 @@ public class ServerQuests extends JavaPlugin {
         questLibrary = new QuestLibrary();
         questLibrary.loadQuestConfiguration(serverQuestSection);
         loadConfigurationLimits();
+
+        //TownyQuests edit
+        loadAutoQuest();
+
         messages.reload();
         loadGuis();
         registerGuiEvents();

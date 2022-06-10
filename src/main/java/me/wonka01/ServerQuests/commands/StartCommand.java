@@ -2,6 +2,7 @@ package me.wonka01.ServerQuests.commands;
 
 import lombok.NonNull;
 import me.knighthat.apis.commands.PluginCommand;
+import me.modify.townyquests.AutoQuestTimer;
 import me.wonka01.ServerQuests.ServerQuests;
 import me.wonka01.ServerQuests.configuration.QuestModel;
 import me.wonka01.ServerQuests.enums.EventType;
@@ -13,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 public class StartCommand extends PluginCommand {
 
     public StartCommand(ServerQuests plugin) {
-        super(plugin, true);
+        super(plugin, true, AutoQuestTimer.isEnabled());
     }
 
     @Override
