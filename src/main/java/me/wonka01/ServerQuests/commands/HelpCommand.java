@@ -23,6 +23,7 @@ public class HelpCommand extends PluginCommand {
 
     @Override
     public void execute(@NonNull CommandSender sender, @NotNull @NonNull String[] args) {
-        getPlugin().getMessages().message("helpMessage");
+        String helpMessage = getPlugin().getMessages().message("helpMessage");
+        sender.sendMessage(helpMessage);
     }
 }

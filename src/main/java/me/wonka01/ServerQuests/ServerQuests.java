@@ -1,8 +1,11 @@
 package me.wonka01.ServerQuests;
 
+import com.modify.fundamentum.Fundamentum;
 import lombok.Getter;
 import lombok.NonNull;
-import me.modify.townyquests.AutoQuestTimer;
+import me.modify.townyquests.autoquest.AutoQuest;
+import me.modify.townyquests.autoquest.AutoQuestTimer;
+import me.modify.townyquests.hooks.PAPIHook;
 import me.wonka01.ServerQuests.commands.CommandManager;
 import me.knighthat.apis.files.Config;
 import me.knighthat.apis.files.Messages;
@@ -18,7 +21,6 @@ import net.milkbowl.vault.economy.Economy;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.checkerframework.checker.units.qual.A;
 
 import java.util.Locale;
 
@@ -39,19 +41,26 @@ public class ServerQuests extends JavaPlugin {
     private DonateOptions donateOptionsGui;
     private ActiveQuests activeQuests;
     private JsonQuestSave jsonSave;
+    private PAPIHook papiHook;
 
-    private AutoQuestTimer autoQuestTimer;
+    //private AutoQuestTimer autoQuestTimer;
+
+    @Getter private AutoQuest autoQuest;
 
     @Override
     public void onEnable() {
 
-        new CommandManager(this);
+        Fundamentum.setPlugin(this);
 
         loadConfig();
         loadConfigurationLimits();
 
         // TownyQuests edit
+        autoQuest = new AutoQuest(this);
         loadAutoQuest();
+        handleHooks();
+
+        new CommandManager(this);
 
         loadQuestLibraryFromConfig();
         loadSaveData();
@@ -94,22 +103,41 @@ public class ServerQuests extends JavaPlugin {
         this.activeQuests = new ActiveQuests();
     }
 
-    private void loadAutoQuest() {
-        autoQuestTimer = new AutoQuestTimer(this);
-        boolean autoQuestEnabled = getConfig().getBoolean("autoQuest.enabled", true);
-        int autoQuestIntervalMinutes = getConfig().getInt("autoQuest.interval", 5);
-        long autoQuestIntervalTicks = (autoQuestIntervalMinutes * 60L) * 20;
+    private void handleHooks() {
+        papiHook = new PAPIHook(this);
+        papiHook.check();
+        papiHook.registerExpansion();
+    }
 
-        AutoQuestTimer.setEnabled(autoQuestEnabled);
-        AutoQuestTimer.setInterval(autoQuestIntervalTicks);
+    private void loadAutoQuest() {
+        boolean autoQuestEnabled = getConfig().getBoolean("autoQuest.enabled", true);
+
+        int autoQuestDurationMinutes = getConfig().getInt("autoQuest.duration", 2);
+
+        int autoQuestDelayMinutes = getConfig().getInt("autoQuest.delay", 2);
+
+        autoQuest.setEnabled(autoQuestEnabled);
+        autoQuest.getTimer().setDuration(autoQuestDurationMinutes);
+        autoQuest.getTimer().setDelay(autoQuestDelayMinutes);
 
         if (autoQuestEnabled) {
+
+            long ONE_MINUTE_IN_TICKS = 1200;
+
             // Only a single active quest can be running at a time when auto quest is enabled.
             ActiveQuests.setQuestLimit(1);
 
-            // Start the repeating task which automatically activates/ends quests.
-            getServer().getScheduler().scheduleSyncRepeatingTask(this, new AutoQuestTimer(this),
-                AutoQuestTimer.getInterval(), AutoQuestTimer.getInterval());
+            // Start the repeating task which automatically quests
+            if (!autoQuest.getTimer().isRunning()) {
+                autoQuest.getTimer().setTaskId(getServer().getScheduler().scheduleSyncRepeatingTask(this, new AutoQuestTimer(this),
+                    0, ONE_MINUTE_IN_TICKS));
+            }
+        } else {
+            // If this method is being run on reload, and the auto quest timer was previously
+            // active but is not currently, then the timer must be cancelled from the bukkit scheduler.
+            if (autoQuest.getTimer().isRunning()) {
+                autoQuest.getTimer().cancelTask();
+            }
         }
     }
 

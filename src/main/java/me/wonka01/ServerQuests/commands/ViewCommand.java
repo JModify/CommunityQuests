@@ -2,6 +2,7 @@ package me.wonka01.ServerQuests.commands;
 
 import lombok.NonNull;
 import me.knighthat.apis.commands.PluginCommand;
+import me.modify.townyquests.autoquest.AutoQuestTimer;
 import me.wonka01.ServerQuests.ServerQuests;
 import me.wonka01.ServerQuests.gui.ViewGui;
 import me.wonka01.ServerQuests.questcomponents.ActiveQuests;
@@ -26,16 +27,21 @@ public class ViewCommand extends PluginCommand {
 
     @Override
     public void execute(@NonNull CommandSender sender, @NotNull @NonNull String[] args) {
-        Player player = (Player) sender;
+        if (!getPlugin().getAutoQuest().isEnabled()) {
+            Player player = (Player) sender;
 
-        if (ActiveQuests.getActiveQuestsInstance().getActiveQuestsList().size() < 1) {
-            String noActiveQuestMessage = getPlugin().getMessages().message("noActiveQuests");
-            player.sendMessage(noActiveQuestMessage);
-            return;
+            if (ActiveQuests.getActiveQuestsInstance().getActiveQuestsList().size() < 1) {
+                String noActiveQuestMessage = getPlugin().getMessages().message("noActiveQuests");
+                player.sendMessage(noActiveQuestMessage);
+                return;
+            }
+
+            ViewGui view = getPlugin().getViewGui();
+            view.initializeItems(player);
+            view.openInventory(player);
+        } else {
+            String commandDisabledMessage = getPlugin().getMessages().message("commandDisabled");
+            sender.sendMessage(commandDisabledMessage);
         }
-
-        ViewGui view = getPlugin().getViewGui();
-        view.initializeItems(player);
-        view.openInventory(player);
     }
 }

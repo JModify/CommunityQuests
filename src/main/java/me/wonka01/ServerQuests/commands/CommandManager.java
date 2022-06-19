@@ -1,5 +1,6 @@
 package me.wonka01.ServerQuests.commands;
 
+import com.modify.fundamentum.text.PlugLogger;
 import lombok.NonNull;
 import me.knighthat.apis.commands.PluginCommand;
 import me.wonka01.ServerQuests.ServerQuests;
@@ -40,16 +41,14 @@ public class CommandManager implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         try {
             if (args.length >= 1) {
-                // TownyQuests fork edit
-                PluginCommand cmd = getCommand(sender, args[0]);
-                if (!cmd.isDisabled()) {
-                    cmd.execute(sender, args);
-                } else {
-                    String message = plugin.getMessages().message("commandDisabled");
-                    sender.sendMessage(message);
-                }
+                getCommand(sender, args[0]).execute(sender, args);
+            } else {
+                String usageMessage = plugin.getMessages().message("usageMessage");
+                sender.sendMessage(usageMessage);
             }
-        } catch (NullPointerException ignored) {
+        } catch (NullPointerException e) {
+            String usageMessage = plugin.getMessages().message("usageMessage");
+            sender.sendMessage(usageMessage);
         }
         return true;
     }

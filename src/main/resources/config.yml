@@ -11,28 +11,27 @@ barColor: "GREEN"
 
 disableBossBar: false
 
-# Should automatic quest starting be enabled.. If this is enabled, users are not able to start server quests,
+# Should automatic-quest starting be enabled.. If this is enabled, users are not able to start server quests,
 # all questing is controlled by the plugin and there will be a timer of randomly selected quests starting every X amount of time.
 autoQuest:
+    # Should auto quest be enabled
     enabled: true
-    interval: 5
+    # Duration in minutes for which a quest will stay active for.
+    duration: 2
+    # Delay in minutes between quests. For example quest X starts, after duration X amount of time, the quest ends.
+    # Delay is the time between when another quest should start. If this is 0, quests will start, end then start again instantaneously.
+    delay: 2
+
+# Placeholder configuration can be configured here.
+# Currently, only 1 placeholder exists:
+# %quests_message%
+# This placeholder will only show valid information when AutoQuest is enabled.
+# It takes on two states:
+# State 1: When a quest is active
+# State 2: When no quests are active
+# Each of these states will display information corresponding to the values below.
+placeholder:
+    questActive: "&c{QUEST} is currently active. {TIME} minutes remaining."
+    noQuestsActive: "&7No quests are currently active."
 
 Quests:
-#    TestQuest: # Quest identifier can be whatever you'd like as long as it's unique
-#        displayName: "&c&lZombie Pig Slayer"
-#        type: mobkill # required, see type list for available types
-#        entities: # This is an optional parameter, if it doesn't exist the quest will count all mob kills. entity reference: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/entity/EntityType.html
-#            - Zombie
-#            - Pig
-#        description: "&fKill 5 zombies as fast as you can!"
-#        goal: 5 # The goal is the amount of the task to be completed
-#        rewards:
-#            experience: 100
-#            money: 1000 # You must have Vault and an Economy plugin installed for this to work
-#            items:
-#                -   material: DIAMOND_SWORD
-#                    amount: 1
-#                    displayName: "&bPowerful Diamond Sword"
-#                -   material: APPLE
-#                    amount: 12
-#                    displayName: "&capples"

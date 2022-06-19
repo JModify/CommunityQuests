@@ -11,6 +11,7 @@ commands:
 
 softdepend:
     - Vault
+    - PlaceholderAPI
 
 permissions:
   communityquests.start:

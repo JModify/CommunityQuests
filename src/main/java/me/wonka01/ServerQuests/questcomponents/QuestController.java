@@ -2,6 +2,7 @@ package me.wonka01.ServerQuests.questcomponents;
 
 import lombok.NonNull;
 import me.knighthat.apis.utils.Colorization;
+import me.modify.townyquests.autoquest.AutoQuestTimer;
 import me.wonka01.ServerQuests.ServerQuests;
 import me.wonka01.ServerQuests.enums.ObjectiveType;
 import me.wonka01.ServerQuests.questcomponents.players.BasePlayerComponent;
@@ -31,8 +32,11 @@ public class QuestController implements Colorization {
         this.eventConstraints = eventConstraints;
         this.objective = objective;
 
-        if (questData.getQuestDuration() > 0) {
-            new QuestTimer(this);
+        // TownyQuests edit
+        if (!plugin.getAutoQuest().isEnabled()) {
+            if (questData.getQuestDuration() > 0) {
+                new QuestTimer(this);
+            }
         }
     }
 
