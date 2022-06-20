@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>me.wonka01</groupId>
-    <artifactId>CommunityQuests</artifactId>
-    <version>1.3.4</version>
+    <artifactId>TownyQuests</artifactId>
+    <version>1.0.0</version>
 
     <contributors>
         <contributor>
@@ -30,8 +30,8 @@
         </contributor>
     </contributors>
 
-    <name>CommunityQuests</name>
-    <description>Create custom objectives for players on your server to complete together!</description>
+    <name>TownyQuests</name>
+    <description>Fork of CommunityQuests. Adds auto questing which is run by the server.</description>
     <properties>
         <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
