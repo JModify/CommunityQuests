@@ -1,6 +1,7 @@
 package me.wonka01.ServerQuests;
 
 import com.modify.fundamentum.Fundamentum;
+import com.modify.fundamentum.text.PlugLogger;
 import com.modify.fundamentum.util.PlugDebugger;
 import lombok.Getter;
 import lombok.NonNull;
@@ -24,6 +25,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ServerQuests extends JavaPlugin {
 
@@ -106,6 +108,7 @@ public class ServerQuests extends JavaPlugin {
     }
 
     /**
+     * TownyQuests Edit
      * All hooks the plugin has to make connection too is handled here.
      * Only to be run on server start.
      */
@@ -116,6 +119,7 @@ public class ServerQuests extends JavaPlugin {
     }
 
     /**
+     * TownyQuests Edit
      * All towny quest related loading is executed here.
      * This should be run upon plugin reload and server start.
      */
@@ -126,6 +130,7 @@ public class ServerQuests extends JavaPlugin {
     }
 
     /**
+     * TownyQuestsEdit
      * All AutoQuest related loading is executed here.
      */
     private void loadAutoQuest() {
@@ -148,7 +153,7 @@ public class ServerQuests extends JavaPlugin {
 
             // Start the repeating task which automatically quests
             if (!autoQuest.getTimer().isRunning()) {
-                autoQuest.getTimer().setTaskId(getServer().getScheduler().scheduleSyncRepeatingTask(this, new AutoQuestTimer(this),
+                autoQuest.getTimer().setTaskId(getServer().getScheduler().scheduleSyncRepeatingTask(this, autoQuest.getTimer(),
                     0, ONE_MINUTE_IN_TICKS));
             }
         } else {

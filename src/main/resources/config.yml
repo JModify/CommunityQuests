@@ -34,7 +34,7 @@ autoQuest:
 # State 2: When no quests are active
 # Each of these states will display information corresponding to the values below.
 placeholder:
-    questActive: "{QUEST} &a is currently active. {TIME} minutes remaining."
+    questActive: "{QUEST} &a is currently active. {TIME} minute(s) remaining."
     noQuestsActive: "&7No quests are currently active."
 
 # All quest configuration should be done below. See example quest on spigot page.

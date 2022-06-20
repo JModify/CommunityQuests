@@ -10,20 +10,12 @@ import me.wonka01.ServerQuests.questcomponents.ActiveQuests;
 import me.wonka01.ServerQuests.questcomponents.QuestController;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class AutoQuestTimer implements Runnable {
 
     /** Instance of the plugin */
     private final ServerQuests plugin;
-
-    /** The task id for this repeating timer on the bukkit scheduler */
-    @Getter @Setter private int taskId;
-
-    /** Duration in minutes which a given quest should last for. 2 minutes by default */
-    @Getter @Setter private int duration;
-
-    /** Delay in minutes between quests ending and then starting again. 2 minutes by default */
-    @Getter @Setter private int delay;
 
     /** Internal data variable */
     private int counter;
@@ -37,6 +29,15 @@ public class AutoQuestTimer implements Runnable {
      */
     private String prevQuestDisplayName;
 
+    /** The task id for this repeating timer on the bukkit scheduler */
+    @Getter @Setter private int taskId;
+
+    /** Duration in minutes which a given quest should last for. 2 minutes by default */
+    @Getter @Setter private int duration;
+
+    /** Delay in minutes between quests ending and then starting again. 2 minutes by default */
+    @Getter @Setter private int delay;
+
     /**
      * Constructs a new AutoQuestTimer.
      * @param plugin ServerQuests instance.
@@ -44,11 +45,11 @@ public class AutoQuestTimer implements Runnable {
     public AutoQuestTimer(ServerQuests plugin) {
         this.plugin = plugin;
         this.taskId = -1;
-        this.duration = 2;
-        this.delay = 2;
-        this.counter = 0;
-        this.timerState = TimerState.READY;
-        this.prevQuestDisplayName = null;
+        duration = 2;
+        delay = 2;
+        counter = 0;
+        timerState = TimerState.READY;
+        prevQuestDisplayName = null;
     }
 
     @Override
@@ -106,8 +107,13 @@ public class AutoQuestTimer implements Runnable {
                             plugin.getDebugger().sendDebugInfo("Quest is already running, changing state to DURATING.");
                             timerState = TimerState.DURATING;
                         } else {
-                            plugin.getDebugger().sendDebugInfo("No quests running, changing state to DELAYING");
-                            timerState = TimerState.DELAYING;
+                            if (delay != 0) {
+                                plugin.getDebugger().sendDebugInfo("No quests running, changing state to DELAYING");
+                                timerState = TimerState.DELAYING;
+                            } else {
+                                startNewRandomQuest();
+                                timerState = TimerState.DURATING;
+                            }
                         }
                     } else {
                         PlugLogger.logInfo("AutoQuest unavailable. No quests present in config file.");
@@ -131,10 +137,8 @@ public class AutoQuestTimer implements Runnable {
     }
 
     private boolean isConfigEmpty() {
-        ActiveQuests activeQuests = ActiveQuests.getActiveQuestsInstance();
-        List<QuestController> activeQuestList = activeQuests.getActiveQuestsList();
-
-        return activeQuestList.isEmpty();
+        Set<String> allQuestKeys = plugin.getQuestLibrary().getAllQuestKeys();
+        return allQuestKeys.isEmpty();
     }
 
     private boolean isQuestRunning() {
@@ -186,8 +190,9 @@ public class AutoQuestTimer implements Runnable {
             }
 
             Optional<QuestController> activeQuest = activeQuestList.stream().findFirst();
-            prevQuestDisplayName = String.valueOf(activeQuest.get().getQuestData().getDisplayName());
-            activeQuest.get().endQuest();
+            QuestController quest = activeQuest.get();
+            prevQuestDisplayName = String.valueOf(quest.getQuestData().getDisplayName());
+            quest.endQuest();
         }
     }
 
@@ -219,7 +224,7 @@ public class AutoQuestTimer implements Runnable {
 
         if (prevQuestDisplayName != null) {
             if (randomQuest.getDisplayName().equals(prevQuestDisplayName)) {
-                getRandomQuestModel();
+                return getRandomQuestModel();
             }
         }
 
@@ -246,26 +251,4 @@ public class AutoQuestTimer implements Runnable {
         return taskId != -1;
     }
 
-    /**
-     * Represents the current state of an AutoQuest timer.
-     */
-    private enum TimerState {
-        /**
-         * AutoQuest timer in it's delaying state means that a quest has ended,
-         * and a delay is currently running before the next quest can start
-         */
-        DELAYING,
-
-        /**
-         * AutoQuest timer in its durating state means that a quest is currently
-         * active and its duration is decreasing in time
-         */
-        DURATING,
-
-        /**
-         * AutoQuest timer in its ready state means that the timer is ready to start a new quest.
-         * This state is only reachable when the server is first started.
-         */
-        READY
-    }
 }

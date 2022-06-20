@@ -1,6 +1,7 @@
 package me.modify.townyquests.hooks;
 
 import com.modify.fundamentum.text.ColorUtil;
+import com.modify.fundamentum.text.PlugLogger;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.wonka01.ServerQuests.ServerQuests;
 import me.wonka01.ServerQuests.questcomponents.ActiveQuests;
