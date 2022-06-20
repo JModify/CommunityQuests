@@ -21,7 +21,7 @@ public class ToggleMessageCommand extends PluginCommand {
 
     @Override
     public @NonNull String getPermission() {
-        return "communityquests.showmessages";
+        return "townyquests.showmessages";
     }
 
     @Override

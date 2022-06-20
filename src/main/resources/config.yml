@@ -1,3 +1,6 @@
+# Enabling debug mode will send extra messages in the console log to help debug the plugin.
+debug: false
+
 # Number of quests that can be in progress at a time.
 # This value is ignored and only 1 quest can be active if auto quest is enabled.
 questLimit: 5
@@ -31,7 +34,8 @@ autoQuest:
 # State 2: When no quests are active
 # Each of these states will display information corresponding to the values below.
 placeholder:
-    questActive: "&c{QUEST} is currently active. {TIME} minutes remaining."
+    questActive: "{QUEST} &a is currently active. {TIME} minutes remaining."
     noQuestsActive: "&7No quests are currently active."
 
+# All quest configuration should be done below. See example quest on spigot page.
 Quests:

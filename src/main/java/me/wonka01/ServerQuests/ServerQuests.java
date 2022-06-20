@@ -1,6 +1,7 @@
 package me.wonka01.ServerQuests;
 
 import com.modify.fundamentum.Fundamentum;
+import com.modify.fundamentum.util.PlugDebugger;
 import lombok.Getter;
 import lombok.NonNull;
 import me.modify.townyquests.autoquest.AutoQuest;
@@ -44,7 +45,7 @@ public class ServerQuests extends JavaPlugin {
     private PAPIHook papiHook;
 
     //private AutoQuestTimer autoQuestTimer;
-
+    @Getter private PlugDebugger debugger;
     @Getter private AutoQuest autoQuest;
 
     @Override
@@ -57,7 +58,8 @@ public class ServerQuests extends JavaPlugin {
 
         // TownyQuests edit
         autoQuest = new AutoQuest(this);
-        loadAutoQuest();
+        debugger = new PlugDebugger();
+        loadTownyQuests();
         handleHooks();
 
         new CommandManager(this);
@@ -66,7 +68,7 @@ public class ServerQuests extends JavaPlugin {
         loadSaveData();
 
         if (!setupEconomy()) {
-            getLogger().info("Warning! No economy plugin found, a cash reward can not be added to a quest in Community Quests.");
+            getLogger().info("Warning! No economy plugin found, a cash reward can not be added to a quest in Towny Quests.");
         }
 
         loadGuis();
@@ -103,12 +105,29 @@ public class ServerQuests extends JavaPlugin {
         this.activeQuests = new ActiveQuests();
     }
 
+    /**
+     * All hooks the plugin has to make connection too is handled here.
+     * Only to be run on server start.
+     */
     private void handleHooks() {
         papiHook = new PAPIHook(this);
         papiHook.check();
         papiHook.registerExpansion();
     }
 
+    /**
+     * All towny quest related loading is executed here.
+     * This should be run upon plugin reload and server start.
+     */
+    private void loadTownyQuests() {
+        boolean isDebug = getConfig().getBoolean("debug", false);
+        debugger.setDebugMode(isDebug);
+        loadAutoQuest();
+    }
+
+    /**
+     * All AutoQuest related loading is executed here.
+     */
     private void loadAutoQuest() {
         boolean autoQuestEnabled = getConfig().getBoolean("autoQuest.enabled", true);
 
@@ -176,7 +195,7 @@ public class ServerQuests extends JavaPlugin {
         loadConfigurationLimits();
 
         //TownyQuests edit
-        loadAutoQuest();
+        loadTownyQuests();
 
         messages.reload();
         loadGuis();

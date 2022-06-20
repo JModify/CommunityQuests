@@ -18,7 +18,7 @@ public class HelpCommand extends PluginCommand {
 
     @Override
     public @NonNull String getPermission() {
-        return "";
+        return "townyquests.help";
     }
 
     @Override

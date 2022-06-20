@@ -27,7 +27,7 @@ public class CommandReward implements Reward {
                         try {
                             amount = Double.parseDouble(parts[3]);
                         } catch (NumberFormatException e) {
-                            PlugLogger.logInfo("Unable to scale command reward amount, amount value not a number");
+                            PlugLogger.logError("Unable to scale command reward amount, amount value not a number");
                         }
 
                         parts[3] = String.valueOf(Math.round(amount * rewardPercentage));

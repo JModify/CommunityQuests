@@ -19,7 +19,7 @@ public class ReloadCommand extends PluginCommand {
 
     @Override
     public @NonNull String getPermission() {
-        return "communityquests.reload";
+        return "townyquests.reload";
     }
 
     @Override

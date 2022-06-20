@@ -22,7 +22,7 @@ public class CommandManager implements CommandExecutor {
 
     public CommandManager(ServerQuests plugin) {
 
-        plugin.getCommand("communityquests").setExecutor(this);
+        plugin.getCommand("townyquests").setExecutor(this);
 
         this.plugin = plugin;
 

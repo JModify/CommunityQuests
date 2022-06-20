@@ -1,40 +1,40 @@
-name: CommunityQuests
+name: TownyQuests
 version: ${project.version}
-author: wonka01, knighthat
+author: wonka01, knighthat, modify
 main: me.wonka01.ServerQuests.ServerQuests
 api-version: 1.13
 
 commands:
-  communityquests:
-      aliases: [cq, quests]
-      description: Commands for Community Quests Plugin
+  townyquests:
+      aliases: [tq, quests, townyq, tquest, tquests]
+      description: Commands for TownyQuests plugin.
 
 softdepend:
     - Vault
     - PlaceholderAPI
 
 permissions:
-  communityquests.start:
+  townyquests.start:
     description: The ability to start server events
     default: op
-  communityquests.stop:
+  townyquests.stop:
     description: The ability to stop an event
     default: op
-  communityquests.reload:
+  townyquests.reload:
     description: Can reload the plugins configurations
     default: op
-  communityquests.view:
+  townyquests.view:
     description: Can view all active quests for the server
     default: true
-  communityquests.donate:
+  townyquests.donate:
     description: Can use the donate command to participate in quests
     default: true
-  communityquests.money:
+  townyquests.money:
       description: Can use the command to contribute money to money quests
       default: true
-  communityquests.showmessages:
+  townyquests.showmessages:
     description: If true the player will receive a message when they contribute to the quest
     default: false
-  communityquests.bossbar.hide:
+  townyquests.bossbar.hide:
     description: The player will not be shown the boss bar by default
     default: false

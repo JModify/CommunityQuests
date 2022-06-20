@@ -25,7 +25,7 @@ public class DonateCommand extends PluginCommand {
 
     @Override
     public @NonNull String getPermission() {
-        return "communityquests.donate";
+        return "townyquests.donate";
     }
 
     @Override

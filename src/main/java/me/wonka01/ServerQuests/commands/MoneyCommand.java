@@ -22,7 +22,7 @@ public class MoneyCommand extends PluginCommand {
 
     @Override
     public @NonNull String getPermission() {
-        return "communityquests.money";
+        return "townyquests.money";
     }
 
     @Override

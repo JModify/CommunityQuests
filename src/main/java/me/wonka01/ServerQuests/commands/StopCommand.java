@@ -21,7 +21,7 @@ public class StopCommand extends PluginCommand {
 
     @Override
     public @NonNull String getPermission() {
-        return "communityquests.stop";
+        return "townyquests.stop";
     }
 
     @Override

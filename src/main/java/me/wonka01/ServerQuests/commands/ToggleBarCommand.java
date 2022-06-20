@@ -21,7 +21,7 @@ public class ToggleBarCommand extends PluginCommand {
 
     @Override
     public @NonNull String getPermission() {
-        return "communityquests.bossbar.hide";
+        return "townyquests.bossbar.hide";
     }
 
     @Override

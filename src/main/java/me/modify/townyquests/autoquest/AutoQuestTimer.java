@@ -58,13 +58,13 @@ public class AutoQuestTimer implements Runnable {
 
                 // Delay is active before a new quest is started.
                 case DELAYING -> {
-                    PlugLogger.logInfo("Triggered DELAYING state. +1 added to counter.");
+                    plugin.getDebugger().sendDebugInfo("Triggered DELAYING state. +1 added to counter.");
                     counter += 1;
 
                     // If the counter is >= to the delay time. A new quest is started
                     // and the state of the timer is changed to the DURATING state.
                     if (counter >= delay) {
-                        PlugLogger.logInfo("DELAYING state completed. New quest started. State changed to DURATING");
+                        plugin.getDebugger().sendDebugInfo("DELAYING state completed. New quest started. State changed to DURATING");
                         startNewRandomQuest();
                         counter = 0;
                         timerState = TimerState.DURATING;
@@ -73,14 +73,14 @@ public class AutoQuestTimer implements Runnable {
 
                 // State where time is decreasing in duration for the active quest.
                 case DURATING -> {
-                    PlugLogger.logInfo("Triggered DURATING state. +1 added to counter.");
+                    plugin.getDebugger().sendDebugInfo("Triggered DURATING state. +1 added to counter.");
                     counter += 1;
 
                     // If the counter is >= to the duration of a given auto quest,
                     // the active quest must be ended and further logic checks which state
                     // the timer must then change too
                     if (counter >= duration) {
-                        PlugLogger.logInfo("DURATING state completed. Quest ended");
+                        plugin.getDebugger().sendDebugInfo("DURATING state completed. Quest ended");
                         endActiveQuest();
                         counter = 0;
 
@@ -89,10 +89,10 @@ public class AutoQuestTimer implements Runnable {
                         // it will indefinitely stay in the DURATING state and quests and start
                         // instantaneously.
                         if (delay == 0) {
-                            PlugLogger.logInfo("Delay is equal to 0 minutes. Next quest started. State still in DURATING.");
+                            plugin.getDebugger().sendDebugInfo("Delay is equal to 0 minutes. Next quest started. State still in DURATING.");
                             startNewRandomQuest();
                         } else {
-                            PlugLogger.logInfo("Timer state changed to DELAYING.");
+                            plugin.getDebugger().sendDebugInfo("Timer state changed to DELAYING.");
                             timerState = TimerState.DELAYING;
                         }
                     }
@@ -100,10 +100,17 @@ public class AutoQuestTimer implements Runnable {
 
                 // Case only reachable when server first starts.
                 case READY -> {
-                    if (isQuestRunning()) {
-                        timerState = TimerState.DURATING;
+                    if (!isConfigEmpty()) {
+                        plugin.getDebugger().sendDebugInfo("READY state triggered, config is not empty.");
+                        if (isQuestRunning()) {
+                            plugin.getDebugger().sendDebugInfo("Quest is already running, changing state to DURATING.");
+                            timerState = TimerState.DURATING;
+                        } else {
+                            plugin.getDebugger().sendDebugInfo("No quests running, changing state to DELAYING");
+                            timerState = TimerState.DELAYING;
+                        }
                     } else {
-                        timerState = TimerState.DELAYING;
+                        PlugLogger.logInfo("AutoQuest unavailable. No quests present in config file.");
                     }
                 }
             }
@@ -121,6 +128,13 @@ public class AutoQuestTimer implements Runnable {
         } else {
             return -1;
         }
+    }
+
+    private boolean isConfigEmpty() {
+        ActiveQuests activeQuests = ActiveQuests.getActiveQuestsInstance();
+        List<QuestController> activeQuestList = activeQuests.getActiveQuestsList();
+
+        return activeQuestList.isEmpty();
     }
 
     private boolean isQuestRunning() {
@@ -187,7 +201,7 @@ public class AutoQuestTimer implements Runnable {
         List<String> allQuestKeysList = new ArrayList<>(allQuestKeys);
 
         if (allQuestKeysList.isEmpty()) {
-            PlugLogger.logInfo("AutoQuest unavailable. No quests present in config file.");
+            plugin.getDebugger().sendDebugInfo("AutoQuest unavailable. No quests present in config file.");
             return null;
         }
 

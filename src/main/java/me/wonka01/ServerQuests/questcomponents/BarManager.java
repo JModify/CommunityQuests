@@ -12,7 +12,7 @@ import java.util.UUID;
 // TODO: Cleanup
 public class BarManager implements Listener {
 
-    public final static String HIDE_BAR = "communityquests.bossbar.hide";
+    public final static String HIDE_BAR = "townyquests.bossbar.hide";
     private static final UUID[] questsToShow = new UUID[1];
     private static boolean disabled = false;
 

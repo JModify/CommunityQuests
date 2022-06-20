@@ -22,7 +22,7 @@ public class ViewCommand extends PluginCommand {
 
     @Override
     public @NonNull String getPermission() {
-        return "communityquests.view";
+        return "townyquests.view";
     }
 
     @Override
