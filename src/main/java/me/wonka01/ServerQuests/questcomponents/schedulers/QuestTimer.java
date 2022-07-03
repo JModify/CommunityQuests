@@ -1,6 +1,7 @@
 package me.wonka01.ServerQuests.questcomponents.schedulers;
 
 import me.wonka01.ServerQuests.ServerQuests;
+import me.wonka01.ServerQuests.questcomponents.ActiveQuests;
 import me.wonka01.ServerQuests.questcomponents.QuestController;
 import me.wonka01.ServerQuests.questcomponents.QuestData;
 import org.bukkit.Bukkit;
@@ -8,6 +9,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.util.List;
+
+/**
+ * QuestTimer, controls quest duration. This class is ignored when AutoQuest is enabled.
+ */
 public class QuestTimer {
     // checks every 2 seconds to see if the quest is complete (TODO make this configurable)
     private final long INTERVAL = 2L;
@@ -28,6 +34,11 @@ public class QuestTimer {
         final QuestData data = controller.getQuestData();
         BukkitScheduler scheduler = Bukkit.getScheduler();
         this.task = scheduler.runTaskTimer(JavaPlugin.getPlugin(ServerQuests.class), () -> {
+
+            if (wasForcefullyStopped() || controller == null) {
+                task.cancel();
+            }
+
             if (data.isGoalComplete()) {
                 task.cancel();
             }
@@ -40,5 +51,9 @@ public class QuestTimer {
                 task.cancel();
             }
         }, 0L, 20L * INTERVAL);
+    }
+
+    private boolean wasForcefullyStopped() {
+        return !ActiveQuests.getActiveQuestsInstance().getActiveQuestsList().contains(controller);
     }
 }

@@ -26,13 +26,8 @@ public class StopCommand extends PluginCommand {
 
     @Override
     public void execute(@NonNull CommandSender sender, @NotNull @NonNull String[] args) {
-        if (!getPlugin().getAutoQuest().isEnabled()) {
-            StopGui stopGui = getPlugin().getStopGui();
-            stopGui.initializeItems();
-            stopGui.openInventory((Player) sender);
-        } else {
-            String commandDisabledMessage = getPlugin().getMessages().message("commandDisabled");
-            sender.sendMessage(commandDisabledMessage);
-        }
+        StopGui stopGui = getPlugin().getStopGui();
+        stopGui.initializeItems();
+        stopGui.openInventory((Player) sender);
     }
 }

@@ -8,9 +8,10 @@ import me.wonka01.ServerQuests.configuration.QuestModel;
 import me.wonka01.ServerQuests.enums.EventType;
 import me.wonka01.ServerQuests.questcomponents.ActiveQuests;
 import me.wonka01.ServerQuests.questcomponents.QuestController;
+import me.wonka01.ServerQuests.questcomponents.QuestData;
 
+import java.sql.Array;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class AutoQuestTimer implements Runnable {
 
@@ -23,19 +24,16 @@ public class AutoQuestTimer implements Runnable {
     /** Internal data variable used to keep track of whether the timer is in delay mode */
     private TimerState timerState;
 
-    /**
-     * Internal data variable used to keep track of the previously active quest.
-     * Implemented to ensure no two quests can be queued sequentially.
-     */
-    private String prevQuestDisplayName;
+    /** Currently active quest which auto quest is controlling.*/
+    private QuestController activeQuest;
+
+    /** Previously active quest which auto quest controlled */
+    private QuestController previouslyActiveQuest;
 
     /** The task id for this repeating timer on the bukkit scheduler */
     @Getter @Setter private int taskId;
 
-    /** Duration in minutes which a given quest should last for. 2 minutes by default */
-    @Getter @Setter private int duration;
-
-    /** Delay in minutes between quests ending and then starting again. 2 minutes by default */
+    /** Delay in seconds between quests ending and then starting again. 2 minutes by default */
     @Getter @Setter private int delay;
 
     /**
@@ -45,11 +43,10 @@ public class AutoQuestTimer implements Runnable {
     public AutoQuestTimer(ServerQuests plugin) {
         this.plugin = plugin;
         this.taskId = -1;
-        duration = 2;
         delay = 2;
         counter = 0;
         timerState = TimerState.READY;
-        prevQuestDisplayName = null;
+        activeQuest = null;
     }
 
     @Override
@@ -66,7 +63,7 @@ public class AutoQuestTimer implements Runnable {
                     // and the state of the timer is changed to the DURATING state.
                     if (counter >= delay) {
                         plugin.getDebugger().sendDebugInfo("DELAYING state completed. New quest started. State changed to DURATING");
-                        startNewRandomQuest();
+                        activeQuest = startNewRandomQuest();
                         counter = 0;
                         timerState = TimerState.DURATING;
                     }
@@ -74,16 +71,31 @@ public class AutoQuestTimer implements Runnable {
 
                 // State where time is decreasing in duration for the active quest.
                 case DURATING -> {
-                    plugin.getDebugger().sendDebugInfo("Triggered DURATING state. +1 added to counter.");
-                    counter += 1;
+
+                    // Was the active quest ended through forceful means OR of goal completion.
+                    if (wasActiveQuestForcefullyEnded() || activeQuest.getQuestData().isGoalComplete()) {
+                        previouslyActiveQuest = activeQuest;
+
+                        if (delay == 0) {
+                            plugin.getDebugger().sendDebugInfo("Delay is equal to 0 minutes. Next quest started. State still in DURATING.");
+                            activeQuest = startNewRandomQuest();
+                        } else {
+                            plugin.getDebugger().sendDebugInfo("Timer state changed to DELAYING.");
+                            activeQuest = null;
+                            timerState = TimerState.DELAYING;
+                        }
+
+                        return;
+                    }
+
+                    activeQuest.getQuestData().decreaseDuration(1);
 
                     // If the counter is >= to the duration of a given auto quest,
                     // the active quest must be ended and further logic checks which state
                     // the timer must then change too
-                    if (counter >= duration) {
+                    if (activeQuest.getQuestData().getQuestDuration() <= 0) {
                         plugin.getDebugger().sendDebugInfo("DURATING state completed. Quest ended");
-                        endActiveQuest();
-                        counter = 0;
+                        previouslyActiveQuest = endActiveQuest();
 
                         // Special case where there is no delay
                         // In this case, the state of the timer is not changed,
@@ -91,9 +103,10 @@ public class AutoQuestTimer implements Runnable {
                         // instantaneously.
                         if (delay == 0) {
                             plugin.getDebugger().sendDebugInfo("Delay is equal to 0 minutes. Next quest started. State still in DURATING.");
-                            startNewRandomQuest();
+                            activeQuest = startNewRandomQuest();
                         } else {
                             plugin.getDebugger().sendDebugInfo("Timer state changed to DELAYING.");
+                            activeQuest = null;
                             timerState = TimerState.DELAYING;
                         }
                     }
@@ -103,20 +116,24 @@ public class AutoQuestTimer implements Runnable {
                 case READY -> {
                     if (!isConfigEmpty()) {
                         plugin.getDebugger().sendDebugInfo("READY state triggered, config is not empty.");
-                        if (isQuestRunning()) {
+
+                        QuestController possibleActiveQuest = getActiveQuest();
+                        if (possibleActiveQuest != null) {
                             plugin.getDebugger().sendDebugInfo("Quest is already running, changing state to DURATING.");
+                            activeQuest = possibleActiveQuest;
                             timerState = TimerState.DURATING;
                         } else {
                             if (delay != 0) {
                                 plugin.getDebugger().sendDebugInfo("No quests running, changing state to DELAYING");
                                 timerState = TimerState.DELAYING;
                             } else {
-                                startNewRandomQuest();
+                                activeQuest = startNewRandomQuest();
                                 timerState = TimerState.DURATING;
                             }
                         }
                     } else {
-                        PlugLogger.logInfo("AutoQuest unavailable. No quests present in config file.");
+                        PlugLogger.logError("AutoQuest unavailable. No quests present in config file.");
+                        cancelTask();
                     }
                 }
             }
@@ -124,111 +141,233 @@ public class AutoQuestTimer implements Runnable {
     }
 
     /**
-     * Returns the time remaining if a quest is currently active.
+     * Returns the time remaining in seconds if a quest is currently active.
      * If no quest is active, -1 is returned.
      * @return time remaining for active quest, or -1 if no quest is active.
      */
     public int getTimeRemaining() {
         if (timerState == TimerState.DURATING) {
-            return duration - counter;
+            int questDuration = activeQuest.getQuestData().getQuestDuration();
+            return questDuration - counter;
         } else {
             return -1;
         }
     }
 
+    /**
+     * Determines whether the plugin's config file contains
+     * any quest configurations.
+     * @return true if the file is empty, else false.
+     */
     private boolean isConfigEmpty() {
         Set<String> allQuestKeys = plugin.getQuestLibrary().getAllQuestKeys();
         return allQuestKeys.isEmpty();
     }
 
-    private boolean isQuestRunning() {
+    /**
+     * Retrieves the active quest saved in the questSave.yml file.
+     * This is only run upon server start.
+     * @return currently active quest saved in file, or null if none.
+     */
+    public QuestController getActiveQuest() {
         ActiveQuests activeQuests = ActiveQuests.getActiveQuestsInstance();
-        List<QuestController> activeQuestList = activeQuests.getActiveQuestsList();
-
-        Optional<QuestController> optionalActiveQuest = activeQuestList.stream().findFirst();
-
-        return optionalActiveQuest.isPresent();
+        List<QuestController> activeQuestsList = activeQuests.getActiveQuestsList();
+        Optional<QuestController> questController = activeQuestsList.stream().filter(quest -> quest.getQuestData().isAutoQuest()).findFirst();
+        return questController.orElse(null);
     }
 
     /**
      * Randomly starts a new quest from the list configured in config.
      * If there are no quests configured, no quest will be started.
      */
-    private void startNewRandomQuest() {
+    private QuestController startNewRandomQuest() {
         ActiveQuests activeQuests = ActiveQuests.getActiveQuestsInstance();
 
         EventType randomEventType = EventType.getRandomEventType();
-        QuestModel randomQuestModel = getRandomQuestModel();
+        QuestModel randomQuestModel = findNextQuestModel();
 
         if (randomQuestModel != null) {
-            activeQuests.beginNewQuest(randomQuestModel, randomEventType);
+            return activeQuests.beginNewQuest(randomQuestModel, randomEventType, true);
         }
+        return null;
     }
 
     /**
      * Ends the currently active quest.
      *
-     * Special case:
-     * If the special case as commented below is executed, the prevQuestDisplayName
-     * variable will not be set and so may be null at any given time. If it is null
-     * there is no guarantee that the next quest started is not the same as the previous.
-     * Very confusing, but shouldn't have to worry about this if you configure
-     * auto quest to be enabled when first starting the server.
-     *
+     * @return QuestController of the quest that was just ended, or null if no active quests.
      */
-    private void endActiveQuest() {
-        ActiveQuests activeQuests = ActiveQuests.getActiveQuestsInstance();
-        List<QuestController> activeQuestList = activeQuests.getActiveQuestsList();
-
-        if (!activeQuestList.isEmpty()) {
-
-            // Special case: The case where this occurs is rare, server owner must have started more than 1 quest when auto quest
-            // was not active, then activated auto quest then reloaded the plugin using the /cq reload command.
-            if (activeQuestList.size() > 1) {
-                activeQuestList.forEach(QuestController::endQuest);
-                return;
-            }
-
-            Optional<QuestController> activeQuest = activeQuestList.stream().findFirst();
-            QuestController quest = activeQuest.get();
-            prevQuestDisplayName = String.valueOf(quest.getQuestData().getDisplayName());
-            quest.endQuest();
-        }
+    private QuestController endActiveQuest() {
+        return activeQuest != null ? activeQuest.endQuest() : null;
     }
 
     /**
-     * Retrieves a random quest model, ensuring this new random quest
-     * is not equal to the previously active quest.
-     * @return a random quest model.
+     * Determines whether the active quest has been forcefully ended
+     * through the use of /townyquests stop.
+     * @return true if forcefully stopped, else false.
      */
-    private QuestModel getRandomQuestModel() {
+    public boolean wasActiveQuestForcefullyEnded() {
+        return !ActiveQuests.getActiveQuestsInstance().getActiveQuestsList().contains(activeQuest);
+    }
+
+    /**
+     * AutoQuest algorithm which determines which quest should be activated next.
+     *
+     * In summary, this algorithm considers three conditions:
+     * 1. Quests which are exempt from auto quest selection.
+     * 2. The previously active quest (if any).
+     * 3. Quests which are already active on the server through manual activation.
+     *
+     * The algorithm will do everything it can to avoid activating quests which meet
+     * any of these conditions. Where a given condition cannot be passed, the algorithm
+     * will then select a quest which meets the condition preceding it. For example a
+     * quest passes conditions 1 & 2 and reaches condition 3, but does not pass this condition,
+     * a selection will be made form all the quests which passed condition 2.
+     *
+     * NOTE: Any selection made from a group of quest models which the algorithm
+     * decides to choose from is done randomly.
+     *
+     * Special cases - if any of these cases are true, null is returned.
+     * - All quests were marked as exempt from auto quest selection in config.
+     * - There are no configured quests in the config file.
+     * - The server is currently at its quest limit.
+     *
+     * @return QuestModel of the next quest AutoQuest should select, or null if any of the
+     *         special cases are true.
+     */
+    private QuestModel findNextQuestModel() {
+        List<QuestController> activeQuests = ActiveQuests.getActiveQuestsInstance().getActiveQuestsList();
+
         Set<String> allQuestKeys = plugin.getQuestLibrary().getAllQuestKeys();
         List<String> allQuestKeysList = new ArrayList<>(allQuestKeys);
 
-        if (allQuestKeysList.isEmpty()) {
-            plugin.getDebugger().sendDebugInfo("AutoQuest unavailable. No quests present in config file.");
+        // Executed if the server has reached the limit for active quests (set in config).
+        if (activeQuests.size() >= ActiveQuests.getQuestLimit()) {
+            PlugLogger.logWarning("Failed to make valid auto quest selection. Quest limit reached.");
             return null;
         }
 
-        int size = allQuestKeysList.size();
-        int randIdx = new Random().nextInt(size);
-
-        String randomQuestKey = allQuestKeysList.get(randIdx);
-        QuestModel randomQuest = plugin.getQuestLibrary().getQuestModelById(randomQuestKey);
+        // Almost unreachable but just in case of infinite recursion in the small chance this is the case
+        if (allQuestKeysList.isEmpty()) {
+            PlugLogger.logWarning("AutoQuest unavailable. No quests present in config file.");
+            return null;
+        }
 
         // If there is only 1 quest configured this must execute otherwise this method will
         // recursively try and find a different quest to the previous for an indefinite amount of time.
         if (allQuestKeysList.size() == 1) {
-            return randomQuest;
+            PlugLogger.logWarning("Quest configuration contains only 1 quest. AutoQuest algorithm will not work as expected.");
+            return plugin.getQuestLibrary().getQuestModelById(allQuestKeysList.get(0));
         }
 
-        if (prevQuestDisplayName != null) {
-            if (randomQuest.getDisplayName().equals(prevQuestDisplayName)) {
-                return getRandomQuestModel();
+        /*
+         * EXEMPTION CHECK
+         */
+        // Condition which returns true if a given quest is not on the AutoQuest accept list.
+        // otherwise, returns false if it is on the exempt list.
+        Condition autoQuestExemptCondition = model -> {
+            if (!plugin.getAutoQuest().getAutoQuestExempt().contains(model.getQuestId())) {
+                return true;
             }
+            return false;
+        };
+
+        List<QuestModel> exemptCheckPassed = getQuestModelsFromCondition(0, allQuestKeysList, new ArrayList<>(), autoQuestExemptCondition);
+
+        // This case will be true if all quests have been marked as exempt.
+        if (exemptCheckPassed.isEmpty()) {
+            PlugLogger.logWarning("Failed to make valid auto quest selection. " +
+                "All quests have been marked as exempt from auto quest selection.");
+            return null;
         }
 
-        return randomQuest;
+        // If there is a previously active quest, which aren't the previously active quest.
+        List<QuestModel> previouslyActiveCheckPassed;
+        if (previouslyActiveQuest != null) {
+            /*
+             * PREVIOUSLY ACTIVE QUEST CHECK
+             */
+            // Condition which returns true if a given quest passed the exemption check
+            // and was not the previously active quest.
+            Condition previouslyActiveCondition = model -> {
+                if (!exemptCheckPassed.contains(model)) return false;
+
+                if (isEqual(previouslyActiveQuest, model)) {
+                    return false;
+                }
+
+                return true;
+            };
+            previouslyActiveCheckPassed = getQuestModelsFromCondition(0, allQuestKeysList, new ArrayList<>(), previouslyActiveCondition);
+        } else {
+            // If there is no previously active quest, just create a copy of all quests which passed the exempt check.
+            previouslyActiveCheckPassed = new ArrayList<>(exemptCheckPassed);
+        }
+
+        // This case will be true if previous checks have returned no suitable quest.
+        if (previouslyActiveCheckPassed.isEmpty()) {
+            PlugLogger.logWarning("AutoQuest algorithm limited with valid quest selection. Selection may be unexpected.");
+            return getRandomModelFromList(exemptCheckPassed);
+        }
+
+        /*
+         * ALREADY MANUALLY RUNNING CHECK
+         */
+        Condition manuallyRunningCondition = model -> {
+            if (!previouslyActiveCheckPassed.contains(model)) return false;
+
+            boolean passed = true;
+            for (QuestController activeQuest : activeQuests) {
+                if (isEqual(activeQuest, model)) {
+                    passed = false;
+                }
+            }
+            return passed;
+        };
+
+
+        List<QuestModel> manuallyRunningCheckPassed = getQuestModelsFromCondition(0, allQuestKeysList, new ArrayList<>(), manuallyRunningCondition);
+        if (manuallyRunningCheckPassed.isEmpty()) {
+            PlugLogger.logWarning("AutoQuest algorithm limited with valid quest selection. Selection may be unexpected.");
+            return getRandomModelFromList(previouslyActiveCheckPassed);
+        }
+
+        plugin.getDebugger().sendDebugInfo("Successfully retrieved random auto quest which satisfy all conditions.");
+        return getRandomModelFromList(manuallyRunningCheckPassed);
+    }
+
+    /**
+     * Recursive function which constructs a list of all quest models which meet a given condition.
+     * @param index starting index
+     * @param allQuestKeys keys of all possible quests to check.
+     * @param questModels starting list of quest models - this list is added too recursively then returned.
+     * @param condition condition of which quests can be added to the returned list of quest models.
+     * @return list of quest models which meet the given condition, order is not randomized.
+     */
+    private List<QuestModel> getQuestModelsFromCondition(int index, List<String> allQuestKeys, List<QuestModel> questModels, Condition condition) {
+        String randomQuestKey = allQuestKeys.get(index);
+
+        QuestModel model = plugin.getQuestLibrary().getQuestModelById(randomQuestKey);
+        if (condition.accept(model)) {
+            questModels.add(model);
+        }
+
+        index += 1;
+        if (index >= allQuestKeys.size()) {
+            return questModels;
+        }
+
+        return getQuestModelsFromCondition(index, allQuestKeys, questModels, condition);
+    }
+
+    /**
+     * Retrieves a random quest model from a list of quest models.
+     * @param models list of models to randomly select one from.
+     * @return quest model which was selected
+     */
+    private QuestModel getRandomModelFromList(List<QuestModel> models) {
+        int randIdx = new Random().nextInt(models.size());
+        return models.get(randIdx);
     }
 
     /**
@@ -251,4 +390,27 @@ public class AutoQuestTimer implements Runnable {
         return taskId != -1;
     }
 
+    /**
+     * Only current way to compare equality of model and controller is
+     * by comparing the display names of the type quests
+     * @param controller quest controller to compare
+     * @param model quest model to compare
+     * @return true if equal, else false.
+     */
+    private boolean isEqual(QuestController controller, QuestModel model) {
+        QuestData data = controller.getQuestData();
+        return (model.getDisplayName().equals(data.getDisplayName()));
+    }
+
+    /** Condition which accepts QuestModels that meet it. */
+    @FunctionalInterface
+    private interface Condition {
+
+        /**
+         * Accept that the given quest model meets this condition.
+         * @param model model to accept
+         * @return true if accepted, else false.
+         */
+        boolean accept(QuestModel model);
+    }
 }

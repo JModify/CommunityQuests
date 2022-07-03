@@ -1,5 +1,7 @@
 package me.wonka01.ServerQuests.configuration;
 
+import lombok.Getter;
+import me.modify.townyquests.autoquest.AutoQuest;
 import me.wonka01.ServerQuests.ServerQuests;
 import me.wonka01.ServerQuests.enums.ObjectiveType;
 import me.wonka01.ServerQuests.questcomponents.rewards.*;
@@ -11,9 +13,12 @@ import java.util.*;
 
 public class QuestLibrary {
 
-    private HashMap<String, QuestModel> questList;
+    @Getter private HashMap<String, QuestModel> questList;
 
-    public QuestLibrary() {
+    private ServerQuests plugin;
+
+    public QuestLibrary(ServerQuests plugin) {
+        this.plugin = plugin;
     }
 
     public QuestModel getQuestModelById(String questId) {
@@ -37,10 +42,16 @@ public class QuestLibrary {
     }
 
     private QuestModel loadQuestFromConfig(ConfigurationSection section) {
+
         String questId = section.getName();
         String displayName = section.getString("displayName");
-        String description = section.getString("description");
-        int timeToComplete = section.getInt("timeToComplete", 0);
+        List<String> description = section.getStringList("description");
+
+        AutoQuest autoQuest = plugin.getAutoQuest();
+
+        int timeToCompleteCoop = section.getInt("timeToCompleteCoop", autoQuest.getDefaultDurationCoop());
+        int timeToCompleteComp = section.getInt("timeToCompleteComp", autoQuest.getDefaultDurationComp());
+
         List<String> mobNames = section.getStringList("entities");
         List<String> itemNames = section.getStringList("materials");
         String displayItem = section.getString("displayItem", "");
@@ -51,7 +62,7 @@ public class QuestLibrary {
         ConfigurationSection rewardsSection = section.getConfigurationSection("rewards");
         ArrayList<Reward> rewards = getRewardsFromConfig(rewardsSection);
 
-        return new QuestModel(questId, displayName, description, timeToComplete, goal,
+        return new QuestModel(questId, displayName, description, timeToCompleteCoop, timeToCompleteComp, goal,
             objectiveType, mobNames, rewards, itemNames, displayItem);
     }
 

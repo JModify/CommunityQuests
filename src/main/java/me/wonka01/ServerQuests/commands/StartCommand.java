@@ -29,47 +29,43 @@ public class StartCommand extends PluginCommand {
 
     @Override
     public void execute(@NonNull CommandSender sender, @NotNull @NonNull String[] args) {
-        if (!getPlugin().getAutoQuest().isEnabled()) {
-            if (args.length >= 3) {
-                QuestModel model = getPlugin().questLibrary.getQuestModelById(args[1]);
-                if (model == null) {
-                    String invalidName = getPlugin().getMessages().message("invalidQuestName");
-                    sender.sendMessage(invalidName);
-                    return;
-                }
+        if (args.length >= 3) {
+            QuestModel model = getPlugin().questLibrary.getQuestModelById(args[1]);
 
-                EventType type;
-                switch (args[2]) {
-                    case "coop":
-                        type = EventType.COLLAB;
-                        if (model.getQuestGoal() <= 0) {
-                            String noGoal = getPlugin().getMessages().message("cooperativeQuestMustHaveAGoal");
-                            sender.sendMessage(noGoal);
-                            return;
-                        }
-                        break;
-                    case "comp":
-                        type = EventType.COMPETITIVE;
-                        break;
-                    default:
-                        String invalidQuestType = getPlugin().getMessages().message("invalidQuestType");
-                        sender.sendMessage(invalidQuestType);
-                        return;
-                }
-
-                if (!ActiveQuests.getActiveQuestsInstance().beginNewQuest(model, type)) {
-                    String reachLimit = getPlugin().getMessages().message("questLimitReached");
-                    sender.sendMessage(reachLimit);
-                }
-            } else if (args.length == 2) {
-                String invalidQuestType = getPlugin().getMessages().message("invalidQuestType");
-                sender.sendMessage(invalidQuestType);
-            } else if (sender instanceof Player) {
-                getPlugin().getStartGui().openInventory((Player) sender);
+            if (model == null) {
+                String invalidName = getPlugin().getMessages().message("invalidQuestName");
+                sender.sendMessage(invalidName);
+                return;
             }
-        } else {
-            String commandDisabledMessage = getPlugin().getMessages().message("commandDisabled");
-            sender.sendMessage(commandDisabledMessage);
+
+            EventType type;
+            switch (args[2]) {
+                case "coop":
+                    type = EventType.COLLAB;
+                    if (model.getQuestGoal() <= 0) {
+                        String noGoal = getPlugin().getMessages().message("cooperativeQuestMustHaveAGoal");
+                        sender.sendMessage(noGoal);
+                        return;
+                    }
+                    break;
+                case "comp":
+                    type = EventType.COMPETITIVE;
+                    break;
+                default:
+                    String invalidQuestType = getPlugin().getMessages().message("invalidQuestType");
+                    sender.sendMessage(invalidQuestType);
+                    return;
+            }
+
+            if (ActiveQuests.getActiveQuestsInstance().beginNewQuest(model, type, false) != null) {
+                String reachLimit = getPlugin().getMessages().message("questLimitReached");
+                sender.sendMessage(reachLimit);
+            }
+        } else if (args.length == 2) {
+            String invalidQuestType = getPlugin().getMessages().message("invalidQuestType");
+            sender.sendMessage(invalidQuestType);
+        } else if (sender instanceof Player) {
+            getPlugin().getStartGui().openInventory((Player) sender);
         }
     }
 }

@@ -1,5 +1,7 @@
 package me.wonka01.ServerQuests.questcomponents;
 
+import lombok.Getter;
+import lombok.Setter;
 import me.wonka01.ServerQuests.configuration.QuestModel;
 import me.wonka01.ServerQuests.enums.EventType;
 import me.wonka01.ServerQuests.util.EventTypeHandler;
@@ -12,16 +14,12 @@ import java.util.UUID;
 public class ActiveQuests {
 
     private static ActiveQuests activeQuestsInstance;
-    private static int questLimit;
+    @Getter @Setter private static int questLimit;
 
     private List<QuestController> activeQuestsList = new ArrayList<>();
 
     public ActiveQuests() {
         activeQuestsInstance = this;
-    }
-
-    public static void setQuestLimit(int limit) {
-        questLimit = limit;
     }
 
     public static ActiveQuests getActiveQuestsInstance() {
@@ -38,15 +36,22 @@ public class ActiveQuests {
         }
     }
 
-    public boolean beginNewQuest(QuestModel questModel, EventType eventType) {
-        if (activeQuestsList.size() >= questLimit) return false;
+    /**
+     * TownyEdit
+     * Begins a new quest.
+     * @param questModel quest model to begin
+     * @param eventType quest type (collaborative or competitive)
+     * @return quest controller of the quest which was started or null if quest limit is reached.
+     */
+    public QuestController beginNewQuest(QuestModel questModel, EventType eventType, boolean autoQuest) {
+        if (activeQuestsList.size() >= questLimit) return null;
 
         EventTypeHandler typeHandler = new EventTypeHandler(eventType);
-        QuestController controller = typeHandler.createQuestController(questModel);
+        QuestController controller = typeHandler.createQuestController(questModel, autoQuest);
         activeQuestsList.add(controller);
         controller.broadcast("questStartMessage");
         BarManager.startShowingPlayersBar(controller.getQuestId());
-        return true;
+        return controller;
     }
 
     public void beginQuestFromSave(QuestController controller) {

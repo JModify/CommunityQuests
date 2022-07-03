@@ -4,13 +4,15 @@ import me.wonka01.ServerQuests.questcomponents.players.BasePlayerComponent;
 import me.wonka01.ServerQuests.questcomponents.players.PlayerData;
 import org.bukkit.Material;
 
+import java.util.List;
+
 public class CompetitiveQuestData extends QuestData {
 
     private BasePlayerComponent players;
 
-    public CompetitiveQuestData(int start, String displayName, String description,
-                                BasePlayerComponent players, String questType, int amountComplete, int durationLeft, Material displayItem) {
-        super(start, displayName, description, questType, amountComplete, durationLeft, displayItem);
+    public CompetitiveQuestData(int start, String displayName, List<String> description,
+                                BasePlayerComponent players, String questType, int amountComplete, int durationLeft, Material displayItem, boolean autoQuest) {
+        super(start, displayName, description, questType, amountComplete, durationLeft, displayItem, autoQuest);
         this.players = players;
     }
 

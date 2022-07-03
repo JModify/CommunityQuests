@@ -7,6 +7,7 @@ import me.wonka01.ServerQuests.ServerQuests;
 import me.wonka01.ServerQuests.enums.ObjectiveType;
 import me.wonka01.ServerQuests.questcomponents.players.BasePlayerComponent;
 import me.wonka01.ServerQuests.questcomponents.schedulers.QuestTimer;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
@@ -33,7 +34,7 @@ public class QuestController implements Colorization {
         this.objective = objective;
 
         // TownyQuests edit
-        if (!plugin.getAutoQuest().isEnabled()) {
+        if (!questData.isAutoQuest()) {
             if (questData.getQuestDuration() > 0) {
                 new QuestTimer(this);
             }
@@ -55,7 +56,7 @@ public class QuestController implements Colorization {
         sendPlayerMessage(player);
     }
 
-    public void endQuest() {
+    public QuestController endQuest() {
         if (questData.hasGoal() && !questData.isGoalComplete() && questData.getQuestType().equalsIgnoreCase("coop")) {
             broadcast("questFailureMessage");
             playerComponent.sendLeaderString();
@@ -67,6 +68,7 @@ public class QuestController implements Colorization {
 
         questBar.removeBossBar();
         ActiveQuests.getActiveQuestsInstance().endQuest(questId);
+        return this;
     }
 
     public void removeBossBar() {

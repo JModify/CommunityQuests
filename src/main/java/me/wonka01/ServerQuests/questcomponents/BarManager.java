@@ -84,6 +84,7 @@ public class BarManager implements Listener {
     // Start showing bar for new quest if more than 2 quests
     // are active, this needs to get called before the object is destroyed
     public static void startShowingPlayersBar(UUID questId) {
+
         QuestController controller = ActiveQuests.getActiveQuestsInstance().getQuestById(questId);
         if (controller == null || !isSlotFree() || !controller.getQuestData().hasGoal()) {
             return;

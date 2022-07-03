@@ -57,8 +57,7 @@ public class DonateOptions extends BaseGui implements Listener, InventoryHolder 
     }
 
     private ArrayList<String> getQuestDisplay(QuestData questData) {
-        ArrayList<String> lore = new ArrayList<>();
-        lore.add(color(questData.getDescription()));
+        ArrayList<String> lore = new ArrayList<>(questData.getDescription());
         lore.add("");
         if (questData.getQuestDuration() > 0) {
 

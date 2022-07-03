@@ -14,16 +14,21 @@ barColor: "GREEN"
 
 disableBossBar: false
 
-# Should automatic-quest starting be enabled.. If this is enabled, users are not able to start server quests,
+# Should automatic-quest starting be enabled. If this is enabled, users are not able to start server quests,
 # all questing is controlled by the plugin and there will be a timer of randomly selected quests starting every X amount of time.
 autoQuest:
     # Should auto quest be enabled
     enabled: true
-    # Duration in minutes for which a quest will stay active for.
-    duration: 2
-    # Delay in minutes between quests. For example quest X starts, after duration X amount of time, the quest ends.
+    # This value is used as a default if the timeToComplete value is not configured for a specific quest.
+    defaultDurationCoop: 60
+    defaultDurationComp: 30
+    # Delay in seconds between quests. For example quest X starts, after duration X amount of time, the quest ends.
     # Delay is the time between when another quest should start. If this is 0, quests will start, end then start again instantaneously.
-    delay: 2
+    delay: 120
+    # Any quest listed here is exempt from being automatically activated by the AutoQuest algorithm.
+    # Example, you have a quest defined as "TestQuest" in the configuration below, if you list it here
+    # auto quest will never activate this quest automatically.
+    exemptQuests: []
 
 # Placeholder configuration can be configured here.
 # Currently, only 1 placeholder exists:
@@ -34,8 +39,31 @@ autoQuest:
 # State 2: When no quests are active
 # Each of these states will display information corresponding to the values below.
 placeholder:
-    questActive: "{QUEST} &a is currently active. {TIME} minute(s) remaining."
+    questActive: "{QUEST} &a is currently active. {TIME} second(s) remaining."
     noQuestsActive: "&7No quests are currently active."
 
 # All quest configuration should be done below. See example quest on spigot page.
 Quests:
+#    TestQuest: # Quest identifier can be whatever you'd like as long as it's unique
+#        displayName: "&c&lZombie and Pig Slayer"
+#        type: mobkill # required, see type list for available types
+#        entities: # This is an optional parameter, if it doesn't exist the quest will count all mob kills. entity reference: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/entity/EntityType.html
+#            - Zombie
+#            - Pig
+#            - Pig_Zombie
+#        description:
+#            - "&fKill 5 zombies as fast as you can!"
+#            - "&aExtra description line"
+#        goal: 5 # The goal is the amount of the task to be completed
+#        timeToCompleteCoop: 60
+#        timeToCompleteComp: 30
+#        rewards:
+#            experience: 100
+#            money: 1000 # You must have Vault and an Economy plugin installed for this to work
+#            items:
+#                - material: DIAMOND_SWORD
+#                  amount: 1
+#                  displayName: "&bPowerful Diamond Sword"
+#                - material: APPLE
+#                  amount: 12
+#                  displayName: "&capples"

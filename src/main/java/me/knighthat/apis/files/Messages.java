@@ -4,6 +4,8 @@ import lombok.NonNull;
 import me.wonka01.ServerQuests.ServerQuests;
 import me.wonka01.ServerQuests.questcomponents.QuestData;
 
+import java.util.List;
+
 public final class Messages extends Getters {
 
     public Messages(ServerQuests plugin) {
@@ -21,15 +23,28 @@ public final class Messages extends Getters {
     public @NonNull String message(@NonNull String path, @NonNull QuestData quest) {
 
         String result = message(path).replace("questName", quest.getDisplayName());
-        result = result.replace("questDescription", quest.getDescription());
 
+        List<String> questDescription = quest.getDescription();
+        StringBuilder builder = new StringBuilder();
+        for (String line : questDescription) {
+            builder.append(line).append('\n').append(" ");
+        }
+        String descString = builder.substring(0, builder.length() - 2);
+        result = result.replace("questDescription", descString);
         return result;
     }
 
     public @NonNull String string(@NonNull String path, @NonNull QuestData quest) {
 
         String result = string(path).replace("questName", quest.getDisplayName());
-        result = result.replace("questDescription", quest.getDescription());
+
+        List<String> questDescription = quest.getDescription();
+        StringBuilder builder = new StringBuilder();
+        for (String line : questDescription) {
+            builder.append(line).append('\n').append(" ");
+        }
+        String descString = builder.substring(0, builder.length() - 2);
+        result = result.replace("questDescription", descString);
 
         return result;
     }

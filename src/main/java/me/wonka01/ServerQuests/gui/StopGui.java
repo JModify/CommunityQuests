@@ -1,5 +1,6 @@
 package me.wonka01.ServerQuests.gui;
 
+import com.modify.fundamentum.text.ColorUtil;
 import lombok.NonNull;
 import me.wonka01.ServerQuests.ServerQuests;
 import me.wonka01.ServerQuests.questcomponents.ActiveQuests;
@@ -15,6 +16,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,14 +46,22 @@ public class StopGui extends BaseGui implements InventoryHolder, Listener {
             QuestData data = controller.getQuestData();
             int goal = data.getQuestGoal();
 
+            String activation;
+            if (!controller.getQuestData().isAutoQuest()) {
+                activation = "&7(Manually Activated)";
+            } else {
+                activation = "&7(Activation by AutoQuest)";
+            }
+
             String progressString = plugin.getMessages().string("progress") + ": &a" + progress + "/" + goal;
 
-            ItemStack item = createGuiItem(data.getDisplayItem(),
-                data.getDisplayName(),
-                data.getDescription(),
-                "",
-                progressString,
-                plugin.getMessages().string("endQuestText"));
+            List<String> lore = new ArrayList<>(data.getDescription());
+            lore.add("");
+            lore.add(progressString);
+            lore.add(ColorUtil.format(activation));
+            lore.add(plugin.getMessages().string("endQuestText"));
+
+            ItemStack item = createGuiItem(data.getDisplayItem(), data.getDisplayName(), lore.toArray(new String[0]));
 
             inventory.setItem(count, item);
             count++;

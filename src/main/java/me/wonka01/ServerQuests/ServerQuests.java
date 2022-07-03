@@ -1,12 +1,10 @@
 package me.wonka01.ServerQuests;
 
 import com.modify.fundamentum.Fundamentum;
-import com.modify.fundamentum.text.PlugLogger;
 import com.modify.fundamentum.util.PlugDebugger;
 import lombok.Getter;
 import lombok.NonNull;
 import me.modify.townyquests.autoquest.AutoQuest;
-import me.modify.townyquests.autoquest.AutoQuestTimer;
 import me.modify.townyquests.hooks.PAPIHook;
 import me.wonka01.ServerQuests.commands.CommandManager;
 import me.knighthat.apis.files.Config;
@@ -24,8 +22,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class ServerQuests extends JavaPlugin {
 
@@ -58,13 +57,12 @@ public class ServerQuests extends JavaPlugin {
         loadConfig();
         loadConfigurationLimits();
 
-        // TownyQuests edit
-        autoQuest = new AutoQuest(this);
+        new CommandManager(this);
+
         debugger = new PlugDebugger();
+        autoQuest = new AutoQuest(this);
         loadTownyQuests();
         handleHooks();
-
-        new CommandManager(this);
 
         loadQuestLibraryFromConfig();
         loadSaveData();
@@ -93,7 +91,7 @@ public class ServerQuests extends JavaPlugin {
     }
 
     private void loadSaveData() {
-        jsonSave = new JsonQuestSave(getDataFolder(), activeQuests);
+        jsonSave = new JsonQuestSave(getDataFolder(), this);
         if (jsonSave.getOrCreateQuestFile()) {
             jsonSave.readAndInitializeQuests();
             BarManager.initializeDisplayBar();
@@ -102,7 +100,7 @@ public class ServerQuests extends JavaPlugin {
 
     private void loadQuestLibraryFromConfig() {
         ConfigurationSection serverQuestSection = getConfig().getConfigurationSection("Quests");
-        questLibrary = new QuestLibrary();
+        questLibrary = new QuestLibrary(this);
         questLibrary.loadQuestConfiguration(serverQuestSection);
         this.activeQuests = new ActiveQuests();
     }
@@ -136,25 +134,26 @@ public class ServerQuests extends JavaPlugin {
     private void loadAutoQuest() {
         boolean autoQuestEnabled = getConfig().getBoolean("autoQuest.enabled", true);
 
-        int autoQuestDurationMinutes = getConfig().getInt("autoQuest.duration", 2);
+        int defaultDurationCoopSeconds = getConfig().getInt("autoQuest.defaultDurationCoop", 60);
+        int defaultDurationCompSeconds = getConfig().getInt("autoQuest.defaultDurationComp", 60);
 
-        int autoQuestDelayMinutes = getConfig().getInt("autoQuest.delay", 2);
+        int autoQuestDelaySeconds = getConfig().getInt("autoQuest.delay", 60);
+
+        List<String> autoQuestExempt = getConfig().getStringList("autoQuest.exemptQuests");
 
         autoQuest.setEnabled(autoQuestEnabled);
-        autoQuest.getTimer().setDuration(autoQuestDurationMinutes);
-        autoQuest.getTimer().setDelay(autoQuestDelayMinutes);
+        autoQuest.setDefaultDurationCoop(defaultDurationCoopSeconds);
+        autoQuest.setDefaultDurationComp(defaultDurationCompSeconds);
+        autoQuest.getTimer().setDelay(autoQuestDelaySeconds);
+        autoQuest.setAutoQuestExempt(autoQuestExempt);
 
         if (autoQuestEnabled) {
-
-            long ONE_MINUTE_IN_TICKS = 1200;
-
-            // Only a single active quest can be running at a time when auto quest is enabled.
-            ActiveQuests.setQuestLimit(1);
+            long ONE_SECOND_IN_TICKS = 20;
 
             // Start the repeating task which automatically quests
             if (!autoQuest.getTimer().isRunning()) {
                 autoQuest.getTimer().setTaskId(getServer().getScheduler().scheduleSyncRepeatingTask(this, autoQuest.getTimer(),
-                    0, ONE_MINUTE_IN_TICKS));
+                    0, ONE_SECOND_IN_TICKS));
             }
         } else {
             // If this method is being run on reload, and the auto quest timer was previously
@@ -195,7 +194,7 @@ public class ServerQuests extends JavaPlugin {
         reloadConfig();
         saveConfig();
         ConfigurationSection serverQuestSection = getConfig().getConfigurationSection("Quests");
-        questLibrary = new QuestLibrary();
+        questLibrary = new QuestLibrary(this);
         questLibrary.loadQuestConfiguration(serverQuestSection);
         loadConfigurationLimits();
 

@@ -14,8 +14,11 @@ public class QuestModel {
 
     private String questId;
     private String displayName;
-    private String eventDescription;
-    private int completeTime;
+    private List<String> description;
+
+    private int completeTimeCoop;
+    private int completeTimeComp;
+
     private int questGoal;
     private ObjectiveType objective;
     private List<String> mobNames;
@@ -23,13 +26,16 @@ public class QuestModel {
     private List<String> itemNames;
     private Material displayItem;
 
-    public QuestModel(String questId, String displayName, String eventDescription,
-                      int completeTime, int questGoal, ObjectiveType objective,
+    public QuestModel(String questId, String displayName, List<String> description,
+                      int completeTimeCoop, int completeTimeComp, int questGoal, ObjectiveType objective,
                       List<String> mobNames, ArrayList<Reward> rewards, List<String> itemNames, String displayItem) {
         this.questId = questId;
         this.displayName = displayName;
-        this.eventDescription = eventDescription;
-        this.completeTime = completeTime;
+        this.description = description;
+
+        this.completeTimeCoop = completeTimeCoop;
+        this.completeTimeComp = completeTimeComp;
+
         this.questGoal = questGoal;
         this.objective = objective;
         this.mobNames = mobNames;

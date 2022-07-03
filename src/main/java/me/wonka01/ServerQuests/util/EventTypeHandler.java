@@ -24,16 +24,20 @@ public class EventTypeHandler {
         eventType = type.equalsIgnoreCase("comp") ? EventType.COMPETITIVE : EventType.COLLAB;
     }
 
-    public QuestController createQuestController(@NonNull QuestModel model) {
-        return createController(model, null, 0, model.getCompleteTime());
+    public QuestController createQuestController(@NonNull QuestModel model, boolean autoQuest) {
+
+        if (eventType == EventType.COLLAB) {
+            return createController(model, null, 0, model.getCompleteTimeCoop(), autoQuest);
+        }
+        return createController(model, null, 0, model.getCompleteTimeComp(), autoQuest);
     }
 
     public QuestController createControllerFromSave(@NonNull QuestModel model, @NonNull Map<UUID, PlayerData> players,
-                                                    int completed, int timeLeft) {
-        return createController(model, players, completed, timeLeft);
+                                                    int completed, int timeLeft, boolean autoQuest) {
+        return createController(model, players, completed, timeLeft, autoQuest);
     }
 
-    private @NonNull QuestController createController(@NonNull QuestModel model, @Nullable Map<UUID, PlayerData> players, int completed, int timeLeft) {
+    private @NonNull QuestController createController(@NonNull QuestModel model, @Nullable Map<UUID, PlayerData> players, int completed, int timeLeft, boolean autoQuest) {
 
         ServerQuests plugin = JavaPlugin.getPlugin(ServerQuests.class);
 
@@ -47,20 +51,20 @@ public class EventTypeHandler {
             pComponent = new BasePlayerComponent(model.getRewards(), players);
         }
 
-        QuestData data = getQuestData(model, completed, pComponent, timeLeft);
+        QuestData data = getQuestData(model, completed, pComponent, timeLeft, autoQuest);
         EventConstraints event = new EventConstraints(model.getItemNames(), model.getMobNames());
 
         return new QuestController(plugin, data, bar, pComponent, event, model.getObjective());
     }
 
-    private QuestData getQuestData(QuestModel questModel, int amountComplete, BasePlayerComponent playerComponent, int timeLeft) {
+    private QuestData getQuestData(QuestModel questModel, int amountComplete, BasePlayerComponent playerComponent, int timeLeft, boolean autoQuest) {
 
         if (eventType == EventType.COMPETITIVE) {
             return new CompetitiveQuestData(questModel.getQuestGoal(), questModel.getDisplayName(),
-                questModel.getEventDescription(), playerComponent, questModel.getQuestId(), amountComplete, timeLeft, questModel.getDisplayItem());
+                questModel.getDescription(), playerComponent, questModel.getQuestId(), amountComplete, timeLeft, questModel.getDisplayItem(), autoQuest);
         } else {
             return new QuestData(questModel.getQuestGoal(), questModel.getDisplayName(),
-                questModel.getEventDescription(), questModel.getQuestId(), amountComplete, timeLeft, questModel.getDisplayItem());
+                questModel.getDescription(), questModel.getQuestId(), amountComplete, timeLeft, questModel.getDisplayItem(), autoQuest);
         }
     }
 }

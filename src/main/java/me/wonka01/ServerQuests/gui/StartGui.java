@@ -47,16 +47,23 @@ public class StartGui extends BaseGui implements InventoryHolder, Listener {
             String key = keys.get(i);
             QuestModel model = getQuestLibrary().getQuestModelById(key);
 
-            ArrayList<String> lore = new ArrayList<>();
-            lore.add(model.getEventDescription());
+            ArrayList<String> lore = new ArrayList<>(model.getDescription());
+
             if (model.getQuestGoal() > 0) {
                 String goal = plugin.getMessages().string("goal");
                 lore.add(goal + ": &c" + model.getQuestGoal());
             }
-            if (model.getCompleteTime() > 0) {
-                String duration = plugin.getMessages().string("duration");
-                lore.add(duration + ": &c" + model.getCompleteTime() + "s");
+
+            if (model.getCompleteTimeCoop() > 0) {
+                String durationCoop = plugin.getMessages().string("durationCoop");
+                lore.add(durationCoop+ ": &c" + model.getCompleteTimeCoop() + "s");
             }
+
+            if (model.getCompleteTimeComp() > 0) {
+                String durationCoop = plugin.getMessages().string("durationComp");
+                lore.add(durationCoop+ ": &c" + model.getCompleteTimeComp() + "s");
+            }
+
             String clickToStart = plugin.getMessages().string("clickToStart");
             lore.add(clickToStart);
 

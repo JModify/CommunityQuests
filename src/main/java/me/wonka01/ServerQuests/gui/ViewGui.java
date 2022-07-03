@@ -13,6 +13,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 
@@ -100,8 +101,7 @@ public class ViewGui extends BaseGui implements Listener, InventoryHolder {
     }
 
     private ArrayList<String> getQuestDisplay(QuestData questData) {
-        ArrayList<String> lore = new ArrayList<>();
-        lore.add(color(questData.getDescription()));
+        ArrayList<String> lore = new ArrayList<>(questData.getDescription());
         lore.add("");
         if (questData.getQuestDuration() > 0) {
             String remaining = plugin.getMessages().string("timeRemaining");
@@ -130,6 +130,10 @@ public class ViewGui extends BaseGui implements Listener, InventoryHolder {
             return;
         }
         e.setCancelled(true);
+    }
+
+    public void onInventoryClose(InventoryCloseEvent e) {
+
     }
 
     public Inventory getInventory() {

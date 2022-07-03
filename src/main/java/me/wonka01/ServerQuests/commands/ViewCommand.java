@@ -27,21 +27,16 @@ public class ViewCommand extends PluginCommand {
 
     @Override
     public void execute(@NonNull CommandSender sender, @NotNull @NonNull String[] args) {
-        if (!getPlugin().getAutoQuest().isEnabled()) {
-            Player player = (Player) sender;
+        Player player = (Player) sender;
 
-            if (ActiveQuests.getActiveQuestsInstance().getActiveQuestsList().size() < 1) {
-                String noActiveQuestMessage = getPlugin().getMessages().message("noActiveQuests");
-                player.sendMessage(noActiveQuestMessage);
-                return;
-            }
-
-            ViewGui view = getPlugin().getViewGui();
-            view.initializeItems(player);
-            view.openInventory(player);
-        } else {
-            String commandDisabledMessage = getPlugin().getMessages().message("commandDisabled");
-            sender.sendMessage(commandDisabledMessage);
+        if (ActiveQuests.getActiveQuestsInstance().getActiveQuestsList().size() < 1) {
+            String noActiveQuestMessage = getPlugin().getMessages().message("noActiveQuests");
+            player.sendMessage(noActiveQuestMessage);
+            return;
         }
+
+        ViewGui view = getPlugin().getViewGui();
+        view.initializeItems(player);
+        view.openInventory(player);
     }
 }
