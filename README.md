@@ -31,3 +31,8 @@ Refer to the CommunityQuests spigot page, but note that the command has been edi
 
 ## Permissions
 Refer to the CommunityQuests spigot page, but note that instead of communityquests.donate for example, it would be townyquests.donate.
+
+## Credits
+wonka01 - owner/original creator of the plugin.
+KnightHat - contributor/tester
+modify (me) - contributor
