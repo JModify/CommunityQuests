@@ -6,7 +6,7 @@
 
     <groupId>me.wonka01</groupId>
     <artifactId>TownyQuests</artifactId>
-    <version>1.0.1</version>
+    <version>1.1.0</version>
 
     <contributors>
         <contributor>
@@ -146,6 +146,12 @@
             <groupId>me.clip</groupId>
             <artifactId>placeholderapi</artifactId>
             <version>2.11.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>me.mraxetv.beasttokens</groupId>
+            <artifactId>bt-api</artifactId>
+            <version>2.1</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
