@@ -11,6 +11,7 @@ public class QuestData {
     private String questType;
     private int questGoal;
     private double amountCompleted;
+
     private int questDuration;
 
     private String displayName;

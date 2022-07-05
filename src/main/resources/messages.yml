@@ -30,10 +30,11 @@ topContributorsTitle: "&l&eTop Contributors&r"
 # rewards title - show to player before receiving their rewards
 rewardsTitle: "&aRewards"
 
-cantDonateItem: "&cThe given item does not have an active donation quest"
+cantDonateItem: "&cSome item(s) you attempted to donate were invalid for any active quest, or the goal(s) has been reached. These items have been returned to your inventory."
 
 # Single words
 experience: "&eexperience"
+beastToken: "&egem(s)"
 competitive: "&aCompetitive"
 cooperative: "&aCooperative"
 goal: "&7Goal"

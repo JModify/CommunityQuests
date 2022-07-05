@@ -30,6 +30,7 @@ public class ItemReward implements Reward, Colorization {
         this.item = new ItemStack(Material.matchMaterial(materialName), amount);
     }
 
+    @Override
     public void giveRewardToPlayer(OfflinePlayer player, double rewardPercentage) {
         Material material = Material.getMaterial(materialName);
 

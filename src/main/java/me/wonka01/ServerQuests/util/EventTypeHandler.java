@@ -25,7 +25,6 @@ public class EventTypeHandler {
     }
 
     public QuestController createQuestController(@NonNull QuestModel model, boolean autoQuest) {
-
         if (eventType == EventType.COLLAB) {
             return createController(model, null, 0, model.getCompleteTimeCoop(), autoQuest);
         }
@@ -46,9 +45,19 @@ public class EventTypeHandler {
             bar.updateBarProgress((double) completed / model.getQuestGoal());
         }
 
-        BasePlayerComponent pComponent = new BasePlayerComponent(model.getRewards());
+        BasePlayerComponent pComponent = new BasePlayerComponent(plugin, model.getRewards());
         if (players != null) {
-            pComponent = new BasePlayerComponent(model.getRewards(), players);
+            pComponent = new BasePlayerComponent(plugin, model.getRewards(), players);
+        }
+
+        if (autoQuest) {
+            if (timeLeft == 0) {
+                if (eventType == EventType.COLLAB) {
+                    timeLeft = plugin.getAutoQuest().getDefaultDurationCoop();
+                } else if (eventType == EventType.COMPETITIVE) {
+                    timeLeft = plugin.getAutoQuest().getDefaultDurationComp();
+                }
+            }
         }
 
         QuestData data = getQuestData(model, completed, pComponent, timeLeft, autoQuest);

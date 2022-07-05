@@ -20,13 +20,12 @@ public class BreakEvent extends QuestListener implements Listener {
     private final String BROKEN = "BROKEN";
     private final MetadataValue meta = new FixedMetadataValue(JavaPlugin.getPlugin(ServerQuests.class), true);
 
-
     public BreakEvent(ActiveQuests activeQuests) {
         super(activeQuests);
     }
 
     @EventHandler
-    public void onBlockBreakEvent(BlockBreakEvent event) {
+    public void onBlockBreak(BlockBreakEvent event) {
         if (event.getBlock().hasMetadata(BROKEN)) {
             return;
         }

@@ -12,15 +12,30 @@ leaderBoardSize: 5
 # See color options here: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/boss/BarColor.html
 barColor: "GREEN"
 
+# Pretty straight forward, disables boss bar for quests plugin.
 disableBossBar: false
+
+# Configure how rewards should be distributed
+rewardDistribution:
+    competitive:
+        # Sets the mode which rewards should be distributed for competitive quests.
+        # Currently only 2 modes:
+        # default - default CommunityQuests algorithm (contribution/goal) * (eligible rewards)
+        # ranked - rewards are evenly distributed between the top x amount of players (x = benchmark value below)
+        mode: ranked
+        # Placing benchmark for which players are distributed rewards. For example, a benchmark of 5 would mean
+        # the top 5 players who participated in a competitive quest will split a given eligible reward (currently
+        # the only eligible rewards are experience, money and BeastTokens)
+        benchmark: 5
 
 # Should automatic-quest starting be enabled. If this is enabled, users are not able to start server quests,
 # all questing is controlled by the plugin and there will be a timer of randomly selected quests starting every X amount of time.
 autoQuest:
     # Should auto quest be enabled
     enabled: true
-    # This value is used as a default if the timeToComplete value is not configured for a specific quest.
+    # Value used if timeToCompleteCoop value is not set for a given quest.
     defaultDurationCoop: 60
+    # Value used if timeToCompleteComp value is not set for a given quest.
     defaultDurationComp: 30
     # Delay in seconds between quests. For example quest X starts, after duration X amount of time, the quest ends.
     # Delay is the time between when another quest should start. If this is 0, quests will start, end then start again instantaneously.
@@ -43,27 +58,28 @@ placeholder:
     noQuestsActive: "&7No quests are currently active."
 
 # All quest configuration should be done below. See example quest on spigot page.
-Quests:
+#Quests:
 #    TestQuest: # Quest identifier can be whatever you'd like as long as it's unique
-#        displayName: "&c&lZombie and Pig Slayer"
+#        displayName: '&c&lZombie and Pig Slayer'
 #        type: mobkill # required, see type list for available types
 #        entities: # This is an optional parameter, if it doesn't exist the quest will count all mob kills. entity reference: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/entity/EntityType.html
 #            - Zombie
 #            - Pig
 #            - Pig_Zombie
 #        description:
-#            - "&fKill 5 zombies as fast as you can!"
-#            - "&aExtra description line"
+#            - '&4Kill 5 zombies as fast as you can!'
+#            - '&6Test test test'
+#        timeToCompleteCoop: 30
+#        timeToCompleteComp: 20
 #        goal: 5 # The goal is the amount of the task to be completed
-#        timeToCompleteCoop: 60
-#        timeToCompleteComp: 30
 #        rewards:
 #            experience: 100
-#            money: 1000 # You must have Vault and an Economy plugin installed for this to work
+#            money: 1000 (You must have Vault and an Economy plugin installed for this to work)
+#            tokens: 1000 (You must have BeastTokens installed for this to work)
 #            items:
 #                - material: DIAMOND_SWORD
 #                  amount: 1
-#                  displayName: "&bPowerful Diamond Sword"
+#                  displayName: '&bPowerful Diamond Sword'
 #                - material: APPLE
 #                  amount: 12
-#                  displayName: "&capples"
+#                  displayName: '&capples'

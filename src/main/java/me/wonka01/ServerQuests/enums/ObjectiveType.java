@@ -23,7 +23,6 @@ public enum ObjectiveType {
     }
 
     public static @NonNull ObjectiveType match(@NonNull String var) {
-
         for (ObjectiveType type : values())
             if (type.name().equalsIgnoreCase(var))
                 return type;

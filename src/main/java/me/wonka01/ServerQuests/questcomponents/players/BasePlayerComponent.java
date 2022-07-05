@@ -1,5 +1,7 @@
 package me.wonka01.ServerQuests.questcomponents.players;
 
+import com.modify.fundamentum.text.PlugLogger;
+import lombok.Getter;
 import me.knighthat.apis.utils.Colorization;
 import me.wonka01.ServerQuests.ServerQuests;
 import me.wonka01.ServerQuests.questcomponents.rewards.Reward;
@@ -20,15 +22,19 @@ public class BasePlayerComponent implements Colorization {
 
     private static int leaderBoardSize = 5;
 
-    private final Map<UUID, PlayerData> playerMap;
-    private final ArrayList<Reward> rewardsList;
+    @Getter private final Map<UUID, PlayerData> playerMap;
+    @Getter private final ArrayList<Reward> rewardsList;
 
-    public BasePlayerComponent(ArrayList<Reward> rewardsList) {
+    private ServerQuests plugin;
+
+    public BasePlayerComponent(ServerQuests plugin, ArrayList<Reward> rewardsList) {
+        this.plugin = plugin;
         this.rewardsList = rewardsList;
         this.playerMap = new TreeMap<>();
     }
 
-    public BasePlayerComponent(ArrayList<Reward> rewardsList, Map<UUID, PlayerData> map) {
+    public BasePlayerComponent(ServerQuests plugin, ArrayList<Reward> rewardsList, Map<UUID, PlayerData> map) {
+        this.plugin = plugin;
         this.rewardsList = rewardsList;
         this.playerMap = map;
     }
@@ -58,7 +64,6 @@ public class BasePlayerComponent implements Colorization {
         if (this.playerMap.size() < 1) {
             return;
         }
-        ServerQuests plugin = JavaPlugin.getPlugin(ServerQuests.class);
         StringBuilder result = new StringBuilder(plugin.getMessages().string("topContributorsTitle"));
         TreeMap<UUID, PlayerData> map = new TreeMap<>(new SortByContributions(this.playerMap));
         map.putAll(this.playerMap);
@@ -108,10 +113,11 @@ public class BasePlayerComponent implements Colorization {
         return jArray;
     }
 
-    public void giveOutRewards(int questGoal) {
+    public void handleCoopRewardDistribution(int questGoal) {
         for (UUID key : playerMap.keySet()) {
             double playerContributionRatio;
             double playerContribution = playerMap.get(key).getAmountContributed();
+
             if (questGoal > 0) {
                 playerContributionRatio = playerContribution / (double) questGoal;
             } else {
@@ -123,7 +129,6 @@ public class BasePlayerComponent implements Colorization {
             if (player.isOnline()) {
                 Player onlinePlayer = (Player) player;
                 if (rewardsList.size() > 0) {
-
                     ServerQuests plugin = JavaPlugin.getPlugin(ServerQuests.class);
                     String rewardTitle = plugin.getMessages().message("rewardsTitle");
                     onlinePlayer.sendMessage(rewardTitle);
@@ -134,5 +139,9 @@ public class BasePlayerComponent implements Colorization {
                 reward.giveRewardToPlayer(player, playerContributionRatio);
             }
         }
+    }
+
+    public void handleCompRewardDistribution(int questGoal) {
+        plugin.getCompetitiveRewardHandler().distributeRewards(this, questGoal);
     }
 }

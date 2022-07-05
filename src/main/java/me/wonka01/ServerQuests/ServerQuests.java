@@ -5,7 +5,10 @@ import com.modify.fundamentum.util.PlugDebugger;
 import lombok.Getter;
 import lombok.NonNull;
 import me.modify.townyquests.autoquest.AutoQuest;
+import me.modify.townyquests.hooks.BeastTokensHook;
 import me.modify.townyquests.hooks.PAPIHook;
+import me.modify.townyquests.listeners.InventoryListener;
+import me.modify.townyquests.rewards.CompetitiveRewardHandler;
 import me.wonka01.ServerQuests.commands.CommandManager;
 import me.knighthat.apis.files.Config;
 import me.knighthat.apis.files.Messages;
@@ -19,35 +22,41 @@ import me.wonka01.ServerQuests.questcomponents.QuestBar;
 import me.wonka01.ServerQuests.questcomponents.players.BasePlayerComponent;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class ServerQuests extends JavaPlugin {
 
+    //Configuration
+    @Getter private final @NonNull Config newConfig = new Config(this);
+    @Getter private final @NonNull Messages messages = new Messages(this);
 
-    @Getter
-    private final @NonNull Config newConfig = new Config(this);
-    @Getter
-    private final @NonNull Messages messages = new Messages(this);
     public QuestLibrary questLibrary;
+
+    // Vault
     @Getter
     private Economy economy;
+
+    // GUI's
     private StartGui startGui;
     private StopGui stopGui;
-    private DonateQuestGui questGui;
     private ViewGui viewGui;
-    private DonateOptions donateOptionsGui;
     private ActiveQuests activeQuests;
     private JsonQuestSave jsonSave;
-    private PAPIHook papiHook;
 
-    //private AutoQuestTimer autoQuestTimer;
+    // Hooks
+    @Getter private PAPIHook papiHook;
+    @Getter private BeastTokensHook beastTokensHook;
+
+
+    // TownyQuests fork
     @Getter private PlugDebugger debugger;
     @Getter private AutoQuest autoQuest;
+    @Getter CompetitiveRewardHandler competitiveRewardHandler;
 
     @Override
     public void onEnable() {
@@ -61,6 +70,7 @@ public class ServerQuests extends JavaPlugin {
 
         debugger = new PlugDebugger();
         autoQuest = new AutoQuest(this);
+        competitiveRewardHandler = new CompetitiveRewardHandler(this);
         loadTownyQuests();
         handleHooks();
 
@@ -72,8 +82,8 @@ public class ServerQuests extends JavaPlugin {
         }
 
         loadGuis();
-        registerGuiEvents();
-        registerQuestEvents();
+        registerOtherListeners();
+        registerQuestListeners();
 
         getLogger().info("Plugin is enabled");
     }
@@ -114,6 +124,9 @@ public class ServerQuests extends JavaPlugin {
         papiHook = new PAPIHook(this);
         papiHook.check();
         papiHook.registerExpansion();
+
+        beastTokensHook = new BeastTokensHook(this);
+        beastTokensHook.check();
     }
 
     /**
@@ -124,6 +137,7 @@ public class ServerQuests extends JavaPlugin {
     private void loadTownyQuests() {
         boolean isDebug = getConfig().getBoolean("debug", false);
         debugger.setDebugMode(isDebug);
+        competitiveRewardHandler.loadConfigurations();
         loadAutoQuest();
     }
 
@@ -180,14 +194,17 @@ public class ServerQuests extends JavaPlugin {
     private void loadGuis() {
         TypeGui typeGui = new TypeGui(this);
         typeGui.initializeItems();
-        getServer().getPluginManager().registerEvents(typeGui, this);
+
         viewGui = new ViewGui(this);
         startGui = new StartGui(this, typeGui);
         startGui.initializeItems();
         stopGui = new StopGui(this);
-        questGui = new DonateQuestGui(this);
-        questGui.initializeItems();
-        donateOptionsGui = new DonateOptions(this, questGui);
+
+        PluginManager manager = getServer().getPluginManager();
+        manager.registerEvents(typeGui, this);
+        manager.registerEvents(startGui, this);
+        manager.registerEvents(stopGui, this);
+        manager.registerEvents(viewGui, this);
     }
 
     public void reloadConfiguration() {
@@ -203,7 +220,6 @@ public class ServerQuests extends JavaPlugin {
 
         messages.reload();
         loadGuis();
-        registerGuiEvents();
     }
 
     public QuestLibrary getQuestLibrary() {
@@ -216,10 +232,6 @@ public class ServerQuests extends JavaPlugin {
 
     public StopGui getStopGui() {
         return stopGui;
-    }
-
-    public DonateQuestGui getQuestsGui() {
-        return questGui;
     }
 
     public ViewGui getViewGui() {
@@ -238,7 +250,7 @@ public class ServerQuests extends JavaPlugin {
         return economy != null;
     }
 
-    private void registerQuestEvents() {
+    private void registerQuestListeners() {
         getServer().getPluginManager().registerEvents(new BarManager(), this);
         getServer().getPluginManager().registerEvents(new BreakEvent(activeQuests), this);
         getServer().getPluginManager().registerEvents(new CatchFishEvent(activeQuests), this);
@@ -254,11 +266,8 @@ public class ServerQuests extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new EnchantItemQuestEvent(activeQuests), this);
     }
 
-    private void registerGuiEvents() {
-        getServer().getPluginManager().registerEvents(questGui, this);
-        getServer().getPluginManager().registerEvents(startGui, this);
-        getServer().getPluginManager().registerEvents(stopGui, this);
-        getServer().getPluginManager().registerEvents(viewGui, this);
-        getServer().getPluginManager().registerEvents(donateOptionsGui, this);
+    private void registerOtherListeners() {
+        PluginManager manager = getServer().getPluginManager();
+        manager.registerEvents(new InventoryListener(), this);
     }
 }

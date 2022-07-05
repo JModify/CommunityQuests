@@ -2,12 +2,10 @@ package me.wonka01.ServerQuests.questcomponents;
 
 import lombok.NonNull;
 import me.knighthat.apis.utils.Colorization;
-import me.modify.townyquests.autoquest.AutoQuestTimer;
 import me.wonka01.ServerQuests.ServerQuests;
 import me.wonka01.ServerQuests.enums.ObjectiveType;
 import me.wonka01.ServerQuests.questcomponents.players.BasePlayerComponent;
 import me.wonka01.ServerQuests.questcomponents.schedulers.QuestTimer;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
@@ -18,6 +16,7 @@ public class QuestController implements Colorization {
     private final QuestData questData;
     private final BasePlayerComponent playerComponent;
     private final EventConstraints eventConstraints;
+
     private final UUID questId;
     private final ObjectiveType objective;
     private final ServerQuests plugin;
@@ -41,6 +40,7 @@ public class QuestController implements Colorization {
         }
     }
 
+
     public void updateQuest(double count, Player player) {
         double amountToAdd = count;
 
@@ -57,13 +57,18 @@ public class QuestController implements Colorization {
     }
 
     public QuestController endQuest() {
-        if (questData.hasGoal() && !questData.isGoalComplete() && questData.getQuestType().equalsIgnoreCase("coop")) {
+        if (questData.hasGoal() && !questData.isGoalComplete() && !isCompetitive()) {
             broadcast("questFailureMessage");
             playerComponent.sendLeaderString();
         } else {
             broadcast("questCompleteMessage");
             playerComponent.sendLeaderString();
-            playerComponent.giveOutRewards(questData.getQuestGoal());
+
+            if (isCompetitive()) {
+                playerComponent.handleCompRewardDistribution(questData.getQuestGoal());
+            } else {
+                playerComponent.handleCoopRewardDistribution(questData.getQuestGoal());
+            }
         }
 
         questBar.removeBossBar();

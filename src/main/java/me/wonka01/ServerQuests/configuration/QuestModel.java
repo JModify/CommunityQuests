@@ -1,6 +1,7 @@
 package me.wonka01.ServerQuests.configuration;
 
 import lombok.Getter;
+import lombok.Setter;
 import me.wonka01.ServerQuests.enums.ObjectiveType;
 import me.wonka01.ServerQuests.questcomponents.rewards.Reward;
 import me.wonka01.ServerQuests.util.ObjectiveTypeUtil;
@@ -16,8 +17,8 @@ public class QuestModel {
     private String displayName;
     private List<String> description;
 
-    private int completeTimeCoop;
-    private int completeTimeComp;
+    @Setter private int completeTimeCoop;
+    @Setter private int completeTimeComp;
 
     private int questGoal;
     private ObjectiveType objective;

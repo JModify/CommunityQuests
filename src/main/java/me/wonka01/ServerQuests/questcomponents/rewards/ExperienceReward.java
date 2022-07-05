@@ -9,25 +9,43 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.text.MessageFormat;
 
-public class ExperienceReward implements Reward, Colorization {
+public class ExperienceReward extends ScalableReward implements Reward, Colorization {
 
-    @Getter
-    private final int experience;
-
-    public ExperienceReward(int experience) {
-        this.experience = experience;
+    public ExperienceReward(ServerQuests plugin, double experience) {
+        super(plugin, experience);
     }
 
     public void giveRewardToPlayer(OfflinePlayer offlinePlayer, double rewardPercentage) {
-        if (!offlinePlayer.isOnline() || experience <= 0) return;
+        if (!offlinePlayer.isOnline() || amount <= 0) return;
 
         Player player = offlinePlayer.getPlayer();
-        int exp = (int) (rewardPercentage * experience);
+        int exp = (int) (rewardPercentage * amount);
+
+        if (exp <= 0) return;
 
         player.giveExp(exp);
 
         ServerQuests plugin = JavaPlugin.getPlugin(ServerQuests.class);
         String message = MessageFormat.format("- &a{0} {1}", exp, plugin.getMessages().message("experience"));
+        player.sendMessage(color(message));
+    }
+
+    @Override
+    public void giveScaledReward(OfflinePlayer offlinePlayer, int scaleFactor) {
+        if (!offlinePlayer.isOnline() || amount <= 0) return;
+
+        Player player = offlinePlayer.getPlayer();
+
+        int scaledAmount = (int) Math.round(amount / scaleFactor);
+
+        if (scaledAmount <= 0) {
+            return;
+        }
+
+        player.giveExp(scaledAmount);
+
+        ServerQuests plugin = JavaPlugin.getPlugin(ServerQuests.class);
+        String message = MessageFormat.format("- &a{0} {1}", scaledAmount, plugin.getMessages().message("experience"));
         player.sendMessage(color(message));
     }
 }

@@ -2,6 +2,7 @@ package me.wonka01.ServerQuests.commands;
 
 import lombok.NonNull;
 import me.knighthat.apis.commands.PluginCommand;
+import me.modify.townyquests.menu.DonateQuestMenu;
 import me.wonka01.ServerQuests.ServerQuests;
 import me.wonka01.ServerQuests.enums.ObjectiveType;
 import me.wonka01.ServerQuests.questcomponents.ActiveQuests;
@@ -35,9 +36,8 @@ public class DonateCommand extends PluginCommand {
         List<QuestController> controllerList = ActiveQuests.getActiveQuestsInstance().getActiveQuestsList();
         for (QuestController controller : controllerList)
             if (controller.getObjectiveType() == ObjectiveType.GUI) {
-
-                getPlugin().getQuestsGui().openInventory(player);
-
+                DonateQuestMenu donateQuestMenu = new DonateQuestMenu(getPlugin(), player);
+                donateQuestMenu.open();
                 return;
             }
 

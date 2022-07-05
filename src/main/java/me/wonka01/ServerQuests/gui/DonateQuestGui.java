@@ -7,8 +7,6 @@ import me.wonka01.ServerQuests.questcomponents.ActiveQuests;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryType;
@@ -16,7 +14,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
-public class DonateQuestGui extends BaseGui implements InventoryHolder, Listener {
+public class DonateQuestGui extends BaseGui implements InventoryHolder {
 
     private final int ITEM_SLOT = 22;
     private final ServerQuests plugin;
@@ -31,7 +29,6 @@ public class DonateQuestGui extends BaseGui implements InventoryHolder, Listener
     }
 
     private @NonNull Inventory createInventory() {
-
         String title = plugin.getMessages().string("donateMenu");
         return Bukkit.createInventory(this, 45, title);
     }
@@ -54,12 +51,7 @@ public class DonateQuestGui extends BaseGui implements InventoryHolder, Listener
         p.openInventory(inventory);
     }
 
-    @EventHandler
-    public void onMoveInventoryItem(InventoryClickEvent e) {
-        if (e.getInventory().getHolder() != this) {
-            return;
-        }
-
+    public void onInventoryClick(InventoryClickEvent e) {
         ItemStack itemOnCursor = e.getCursor();
         Player player = (Player) e.getWhoClicked();
 

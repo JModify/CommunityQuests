@@ -49,7 +49,6 @@ public class CommandManager implements CommandExecutor {
         } catch (NullPointerException e) {
             String usageMessage = plugin.getMessages().message("usageMessage");
             sender.sendMessage(usageMessage);
-            PlugLogger.logInfo("Command not found");
         }
         return true;
     }
