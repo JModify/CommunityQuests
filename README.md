@@ -26,8 +26,8 @@ Some of the other bugs/additions this fork fixes include:
 - Fixed bug where rewards/chat would spam indefinitely if a quest was forcefully stopped using /cq stop.
 - A ton of other tiny bug fixes I found along the way.
 
-##Commands
+## Commands
 Refer to the CommunityQuests spigot page, but note that the command has been edited to /townyquests instead of /communityquests (I made this fork for someone who hired me and they wanted it that way sorry, so all the user interface related stuff is renamed).
 
-##Permissions
+## Permissions
 Refer to the CommunityQuests spigot page, but note that instead of communityquests.donate for example, it would be townyquests.donate.
