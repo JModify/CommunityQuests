@@ -21,6 +21,7 @@ Some of the other bugs/additions this fork fixes include:
 - StopGUI now displays whether a running quest was auto quest activated or manually activated.
 - StartGUI now displays completeTimeCoop and completeTimeComp.
 - Multi line descriptions now supported. For this reason you will have to change your configurations a bit (test configuration shown in messages.yml file of this repository for reference on how to do this).
+- BeastTokens plugin support. Simple use "tokens: {AMOUNT}" in the rewards section of any quest to add beast tokens to the reward pool.
 - RGB support added for all configurable messages (&#HEX_CODE)
 - Fixed donate algorithm sometimes not allowing people to donate for competitive quests.
 - Fixed bug where rewards/chat would spam indefinitely if a quest was forcefully stopped using /cq stop.
