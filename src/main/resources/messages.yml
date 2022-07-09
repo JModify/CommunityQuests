@@ -49,7 +49,7 @@ viewQuests: "Active Quests"
 startQuest: "Begin Quest Menu"
 stopQuest: "End Quest Menu"
 typeMenu: "Select an Event Type"
-donateMenu: "Place item in the center slot!"
+donateMenu: "Donate items here!"
 
 endQuestText: "&eClick to end the quest"
 goBack: "&cGo Back"

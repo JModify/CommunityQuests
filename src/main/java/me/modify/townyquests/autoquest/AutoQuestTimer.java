@@ -165,15 +165,19 @@ public class AutoQuestTimer implements Runnable {
     }
 
     /**
-     * Retrieves the active quest saved in the questSave.yml file.
-     * This is only run upon server start.
-     * @return currently active quest saved in file, or null if none.
+     * Retrieves an active quest in the active quest list which is marked as auto quest.
+     * Intended to be used upon server start or reload.
+     * @return currently active auto quest, or null if none.
      */
     public QuestController getActiveQuest() {
         ActiveQuests activeQuests = ActiveQuests.getActiveQuestsInstance();
         List<QuestController> activeQuestsList = activeQuests.getActiveQuestsList();
         Optional<QuestController> questController = activeQuestsList.stream().filter(quest -> quest.getQuestData().isAutoQuest()).findFirst();
         return questController.orElse(null);
+    }
+
+    public QuestController getActiveControlledQuest() {
+        return this.activeQuest;
     }
 
     /**

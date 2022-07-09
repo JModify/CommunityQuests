@@ -60,20 +60,11 @@ public class ActiveQuestExpansion extends PlaceholderExpansion {
                 return "Placeholder unavailable. AutoQuest is not enabled.";
             }
 
-            ActiveQuests activeQuests = ActiveQuests.getActiveQuestsInstance();
-            List<QuestController> activeQuestList = activeQuests.getActiveQuestsList();
-
-            if (activeQuestList.size() > 1) {
-                return "Placeholder unavailable. More than 1 quest is currently active.";
-            }
-
-            Optional<QuestController> optionalActiveQuest = activeQuestList.stream().findFirst();
+            QuestController activeQuest = plugin.getAutoQuest().getTimer().getActiveControlledQuest();
 
             String message;
-            if (optionalActiveQuest.isPresent()) {
+            if (activeQuest != null) {
                 message = plugin.getConfig().getString("placeholder.questActive", "Error, message could not be read from configuration.");
-
-                QuestController activeQuest = optionalActiveQuest.get();
 
                 if (message.contains("{QUEST}")) {
                     message = message.replace("{QUEST}", ChatColor.stripColor(activeQuest.getQuestData().getDisplayName()));

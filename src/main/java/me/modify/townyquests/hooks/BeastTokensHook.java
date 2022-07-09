@@ -6,6 +6,7 @@ import lombok.Setter;
 import me.mraxetv.beasttokens.BeastTokensAPI;
 import me.wonka01.ServerQuests.ServerQuests;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 
 public class BeastTokensHook {
 
@@ -24,11 +25,16 @@ public class BeastTokensHook {
         }
     }
 
-    public void addTokensToPlayer(OfflinePlayer player, double amount) {
+    public void addTokensToPlayer(OfflinePlayer offlinePlayer, double amount) {
         if (hooked) {
-            BeastTokensAPI.getTokensManager().addTokens(player, amount);
+            if (offlinePlayer.isOnline()) {
+                Player onlinePlayer = offlinePlayer.getPlayer();
+                BeastTokensAPI.getTokensManager().addTokens(onlinePlayer, amount);
+            } else {
+                BeastTokensAPI.getTokensManager().addTokens(offlinePlayer, amount);;
+            }
         } else {
-            plugin.getDebugger().sendDebugInfo("Failed to give player " + player.getUniqueId() + " beast tokens. Plugin not installed.");
+            plugin.getDebugger().sendDebugInfo("Failed to give player " + offlinePlayer.getUniqueId() + " beast tokens. Plugin not installed.");
         }
     }
 }
